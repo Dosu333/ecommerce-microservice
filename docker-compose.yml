@@ -21,9 +21,9 @@ services:
     ports:
       - "6379:6379"
 
-  django:
-    build: ./django_app
-    container_name: django_backend
+  user_service:
+    build: ./user_service
+    container_name: user_service
     restart: always
     depends_on:
       - postgres
@@ -35,7 +35,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./django_app:/app
+      - ./user_service:/app
     command: python manage.py runserver 0.0.0.0:8000
 
 networks:
