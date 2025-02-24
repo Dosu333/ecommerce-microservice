@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "user",
 ]
 
@@ -105,6 +108,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'user.User'
+TOKEN_LIFESPAN = 24  # in hours
+CLIENT_URL = config('CLIENT_URL')
+
+# Rest Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    # 'EXCEPTION_HANDLER': 'core.utils.custom_exception_handler'
+}
+
 
 
 # Internationalization
@@ -128,3 +146,33 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Spectacular settings
+SPECTACULAR_SETTINGS = {
+    'SCHEMA_PATH_PREFIX': r'/api',
+    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'COMPONENT_SPLIT_PATCH': True,
+    'COMPONENT_SPLIT_REQUEST': True,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+        "displayRequestDuration": True
+    },
+    'UPLOADED_FILES_USE_URL': True,
+    'TITLE': 'Ecommerce Application API',
+    'DESCRIPTION': 'User Service API Doc',
+    'VERSION': '1.0.0',
+    'LICENCE': {'name': 'BSD License'},
+    'CONTACT': {'name': 'Oladosu Larinde', 'email': 'larindeakin@gmail.com'},
+
+    # Oauth2 related settings. used for example by django-oauth2-toolkit.
+    # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#oauth-flows-object
+    'OAUTH2_FLOWS': [],
+    'OAUTH2_AUTHORIZATION_URL': None,
+    'OAUTH2_TOKEN_URL': None,
+    'OAUTH2_REFRESH_URL': None,
+    'OAUTH2_SCOPES': None,
+}
