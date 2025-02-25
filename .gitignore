@@ -12,9 +12,8 @@ setup.cfg
 !**/migrations/__init__.py
 .DS_Store
 celerybeat.pid
-**/logs/debug.log
-**/logs/celery.log
-user_service/logs/
+**/logs/** 
+!**/logs
 .env
 /k8s/secrets/
 **/management/data/**
