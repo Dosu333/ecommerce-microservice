@@ -64,6 +64,15 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 class CustomObtainTokenPairSerializer(TokenObtainPairSerializer):
+    role = serializers.CharField(write_only=True, required=True)
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = User.objects.get(email=attrs['email'])
+        if attrs['role'].upper() not in user.roles:
+            raise PermissionDenied(
+                _('You do not have permission to access this resource.'))
+        return data
 
     @classmethod
     def get_token(cls, user):

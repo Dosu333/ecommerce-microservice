@@ -1,0 +1,12 @@
+2025-02-25 11:58:25 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 11:58:27 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 11:58:28 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 11:59:55 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 11:59:58 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 11:59:59 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:06:29 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:06:32 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:06:33 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:07:13 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:07:15 [ERROR] django.request: Internal Server Error: /api/auth/login/
+2025-02-25 12:07:17 [ERROR] django.request: Internal Server Error: /api/auth/login/

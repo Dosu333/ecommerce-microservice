@@ -44,9 +44,6 @@ services:
     build: ./product_service
     container_name: product_service
     restart: always
-    depends_on:
-      - postgres
-      - redis
     env_file:
       - ./.env
     networks:
@@ -108,3 +105,4 @@ networks:
 
 volumes:
   postgres_data:
+  mongodb_product_data:

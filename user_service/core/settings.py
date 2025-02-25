@@ -143,7 +143,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    # 'EXCEPTION_HANDLER': 'core.utils.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
 
 

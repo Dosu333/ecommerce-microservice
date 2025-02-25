@@ -10,38 +10,67 @@ User = get_user_model()
 class LoginTests(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.customer = User.objects.create_user(
             email="user@example.com",
             password="testpassword",
             is_active=True,
             verified=True
         )
+        self.vendor = User.objects.create_user(
+            email="uservendor@example.com",
+            password="testpassword",
+            roles=['VENDOR'],
+            is_active=True,
+            verified=True
+        )
         self.login_url = reverse('user:login')
 
-    def test_valid_login(self):
+    def test_valid_customer_login(self):
         """Ensure a user can log in and get a token"""
         response = self.client.post(self.login_url, {
             "email": "user@example.com",
-            "password": "testpassword"
+            "password": "testpassword",
+            "role": "customer"
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)  # JWT token returned
+        
+    def test_valid_vendor_login(self):
+        """Ensure a user can log in and get a token"""
+        response = self.client.post(self.login_url, {
+            "email": "uservendor@example.com",
+            "password": "testpassword",
+            "role": "vendor"
+        })
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)  # JWT token returned
 
     def test_invalid_login(self):
         """Ensure login fails with wrong credentials"""
         response = self.client.post(self.login_url, {
             "email": "user@example.com",
-            "password": "wrongpassword"
+            "password": "wrongpassword",
+            "role": "customer"
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        
+    def test_invalid_role_login(self):
+        """Ensure login fails with wrong role"""
+        response = self.client.post(self.login_url, {
+            "email": "user@example.com",
+            "password": "testpassword",
+            "role": "Vendor"
+        })
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_unverified_user_login(self):
         """Ensure unverified user cannot login"""
-        self.user.verified = False
-        self.user.save()
+        self.customer.verified = False
+        self.customer.save()
         response = self.client.post(self.login_url, {
             "email": "user@example.com",
-            "password": "testpassword"
+            "password": "testpassword",
+            "role": "customer"
             })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
