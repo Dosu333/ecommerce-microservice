@@ -40,6 +40,23 @@ services:
       - ./user_service:/app
     command: python manage.py runserver 0.0.0.0:8000
 
+  product_service:
+    build: ./product_service
+    container_name: product_service
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./product_service:/app
+    command: python manage.py runserver 0.0.0.0:8002
+
   celery_worker:
     build: ./user_service
     container_name: celery_worker
