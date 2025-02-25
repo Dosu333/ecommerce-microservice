@@ -1,4 +1,5 @@
 import asyncio
+from datetime import date
 from django.conf import settings
 from sentry_sdk import capture_exception
 from rest_framework.decorators import action
@@ -21,7 +22,7 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from .models import User, Token
 from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSerializer, CustomObtainTokenPairSerializer,
                           VerifyTokenSerializer, InitializePasswordResetSerializer, CreatePasswordSerializer)
-# from .tasks import send_registration_email, send_password_reset_email
+from .tasks import send_password_reset_email
 
 
 class AuthViewsets(viewsets.ModelViewSet):
@@ -81,12 +82,13 @@ class AuthViewsets(viewsets.ModelViewSet):
                 user = get_user_model().objects.filter(email=email, is_active=True).first()
                 if not user:
                     return Response({'success': False, 'message': 'user with this record not found'}, status=status.HTTP_400_BAD_REQUEST)
+                year = date.today().year
                 token, created = Token.objects.update_or_create(user=user, token_type='PASSWORD_RESET', defaults={
                                                                 'user': user, 'token_type': 'PASSWORD_RESET',
                                                                 'token': get_random_string(120)})
                 email_data = {'fullname': user.firstname,
-                              'email': user.email, 'token': token.token}
-                # send_password_reset_email.delay(email_data)
+                              'email': user.email, 'url': f'{settings.CLIENT_URL}/reset-password/?token={token.token}', 'year': year}
+                send_password_reset_email.delay(email_data)
                 return Response({'success': True, 'message': 'Email successfully sent to registered email'}, status=status.HTTP_200_OK)
             return Response({'success': False, 'errors': serializer.errors}, status.HTTP_400_BAD_REQUEST)
         except Exception as e:

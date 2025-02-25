@@ -11,7 +11,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from email_validator import validate_email, EmailNotValidError
 from .models import Token, User
-# from .tasks import send_new_user_email, send_password_reset_email
+from .tasks import send_new_user_email
 
 
 class ListUserSerializer(serializers.ModelSerializer):
@@ -45,12 +45,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        year = date.today().year
         token, _ = Token.objects.update_or_create(
             user=user, token_type='ACCOUNT_VERIFICATION',
             defaults={'user': user, 'token_type': 'ACCOUNT_VERIFICATION', 'token': get_random_string(120)})
         user_data = {'id': user.id, 'email': user.email, 'fullname': f"{user.lastname} {user.firstname}",
-                     'url': f"{settings.CLIENT_URL}/verify-user/?token={token.token}"}
-        # send_new_user_email.delay(user_data)
+                     'url': f"{settings.CLIENT_URL}/verify-user/?token={token.token}", 'year': year}
+        send_new_user_email.delay(user_data)
         return user
 
     def update(self, instance, validated_data):

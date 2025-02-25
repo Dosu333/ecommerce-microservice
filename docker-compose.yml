@@ -15,6 +15,8 @@ services:
   redis:
     image: bitnami/redis:latest
     container_name: redis_cache
+    env_file:
+      - ./.env
     networks:
       - ecommerce-network
     restart: always
@@ -37,6 +39,51 @@ services:
     volumes:
       - ./user_service:/app
     command: python manage.py runserver 0.0.0.0:8000
+
+  celery_worker:
+    build: ./user_service
+    container_name: celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - user_service
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./user_service:/app
+    command: celery -A core worker --loglevel=info --logfile=logs/celery.log
+
+  celery_beat:
+    build: ./user_service
+    container_name: celery_beat
+    restart: always
+    depends_on:
+      - redis
+      - celery_worker
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./user_service:/app
+    command: celery -A core beat --loglevel=info
+
+  flower:
+    image: mher/flower
+    container_name: flower_dashboard
+    restart: always
+    depends_on:
+      - redis
+      - celery_worker
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    ports:
+      - "5555:5555"
+    command: celery --broker=${REDIS_URL} flower --port=5555
 
 networks:
   ecommerce-network:

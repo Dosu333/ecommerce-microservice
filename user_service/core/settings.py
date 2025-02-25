@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "core.celery.CeleryConfig",
     "user",
 ]
 
@@ -110,6 +111,27 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'user.User'
 TOKEN_LIFESPAN = 24  # in hours
 CLIENT_URL = config('CLIENT_URL')
+
+# Celery settings
+REDIS_URL = config('REDIS_URL')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+
+FLOWER_BASIC_AUTH = config('FLOWER_BASIC_AUTH')
+
+
+# Email Settings
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_FROM = config('SENDER_EMAIL')
+EMAIL_HOST = config('SMTP_HOST')
+EMAIL_HOST_USER = config('SENDER_EMAIL')  
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
 
 # Rest Framework settings
 REST_FRAMEWORK = {

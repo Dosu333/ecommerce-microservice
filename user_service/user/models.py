@@ -52,8 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=17, blank=True, null=True)
     roles = ArrayField(models.CharField(max_length=20, blank=True,
                                         choices=USER_ROLE), default=default_role, size=4)
-    gender = ArrayField(models.CharField(max_length=7, blank=True,
-                                        choices=GENDER_OPTION), default=default_gender, size=4)
+    gender = models.CharField(max_length=7, blank=True, choices=GENDER_OPTION)
     company = models.CharField(max_length=255, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
