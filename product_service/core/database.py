@@ -3,7 +3,8 @@ from decouple import config
 
 
 MONGO_URI = config("MONGO_URI")
+MONGO_DB_NAME = config("MONGO_DB_NAME")
 
 client = MongoClient(MONGO_URI)
-db = client["product_db"]
+db = client[MONGO_DB_NAME]
 products_collection = db["products"]
