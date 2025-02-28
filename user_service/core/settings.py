@@ -214,8 +214,8 @@ SPECTACULAR_SETTINGS = {
         "displayRequestDuration": True
     },
     'UPLOADED_FILES_USE_URL': True,
-    'TITLE': 'Ecommerce Application API',
-    'DESCRIPTION': 'User Service API Doc',
+    'TITLE': 'User Application API',
+    'DESCRIPTION': 'User Service API Doc for Ecommerce Microservice',
     'VERSION': '1.0.0',
     'LICENCE': {'name': 'BSD License'},
     'CONTACT': {'name': 'Oladosu Larinde', 'email': 'larindeakin@gmail.com'},
