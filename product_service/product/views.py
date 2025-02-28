@@ -38,10 +38,6 @@ class ProductAPIView(views.APIView):
             product_data = serializer.validated_data
             product_data['id'] = str(uuid.uuid4())
             
-            category = categories_collection.find_one({"id": product_data["category_id"]})
-            if not category:
-                return Response({'status': 400, 'message': 'Invalid category_id'}, status=status.HTTP_400_BAD_REQUEST)
-            
             # Convert Decimal fields to float
             for key, value in product_data.items():
                 if isinstance(value, Decimal):
@@ -49,5 +45,4 @@ class ProductAPIView(views.APIView):
             
             products_collection.insert_one(product_data)
             return Response({'status': 200, 'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
-        
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
