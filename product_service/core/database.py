@@ -8,3 +8,4 @@ MONGO_DB_NAME = config("MONGO_DB_NAME")
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB_NAME]
 products_collection = db["products"]
+categories_collection = db["categories"]
