@@ -1,13 +1,21 @@
 from rest_framework import serializers
+from core.database import categories_collection
 
 
 class CategorySerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=255, read_only=True)
     name = serializers.CharField(max_length=255)
     description = serializers.CharField()
 
-class CreateProductSerializer(serializers.Serializer):
+class ProductSerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=255, read_only=True)
     name = serializers.CharField(max_length=255)
     description = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField()
-    # image = serializers.ImageField()
+    category_id = serializers.CharField(max_length=255, write_only=True)
+    category = serializers.SerializerMethodField()
+    
+    def get_category(self, obj):
+        category = categories_collection.find_one({"id": obj["category_id"]})
+        return CategorySerializer(category).data
