@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-vdizr1j+pz42=mc+y2^t_y#&r!+tr+u$9&+h18a^0efspcn6b1"
+SECRET_KEY = config('PRODUCT_SERVICE_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -138,6 +139,14 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
+
+# Cloudinary configuration       
+cloudinary.config( 
+    cloud_name = config("CLOUDINARY_CLOUD_NAME"), 
+    api_key = config("CLOUDINARY_API_KEY"), 
+    api_secret = config("CLOUDINARY_API_SECRET"),
+    secure=False
+)
 
 # Logging configuration
 LOGGING = {

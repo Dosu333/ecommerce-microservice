@@ -14,6 +14,7 @@ class ProductSerializer(serializers.Serializer):
     description = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField()
+    images = serializers.ListField(child=serializers.URLField(), read_only=True)
     category_id = serializers.CharField(max_length=255, write_only=True)
     category = serializers.SerializerMethodField()
     

@@ -1,6 +1,7 @@
 from rest_framework import views, status
 from rest_framework.response import Response
 from core.database import products_collection, categories_collection
+from core.utils import upload_images
 from .serializers import ProductSerializer, CategorySerializer
 from decimal import Decimal
 import uuid
@@ -37,6 +38,8 @@ class ProductAPIView(views.APIView):
         if serializer.is_valid():
             product_data = serializer.validated_data
             product_data['id'] = str(uuid.uuid4())
+            images = request.FILES.getlist('images', [])
+            product_data['images'] = upload_images(images)
             
             # Convert Decimal fields to float
             for key, value in product_data.items():
