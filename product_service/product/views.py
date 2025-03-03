@@ -95,3 +95,11 @@ class ProductAPIView(views.APIView):
             }, status=status.HTTP_200_OK)
 
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, product_id):
+        product = products_collection.find_one({"id": product_id})
+        if not product:
+            return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        products_collection.delete_one({"id": product_id})
+        return Response({'status': 200, 'message': 'Product deleted successfully'}, status=status.HTTP_200_OK)

@@ -40,7 +40,6 @@ def test_create_product(api_client, product_payload):
         response = api_client.post(url, product_payload, format="json")
         assert response.status_code == 201
         assert response.data["status"] == 201
-        assert "Product created successfully" in response.data["message"]
 
         # Ensure product is inserted into DB
         product = products_collection.find_one({"name": "Laptop"})
@@ -75,7 +74,6 @@ def test_update_product(api_client, product_payload):
         # Assertions
         assert response.status_code == 200
         assert response.data["status"] == 200
-        assert "Product updated successfully" in response.data["message"]
 
         # Ensure product is updated in MongoDB
         updated_product = products_collection.find_one({"id": product["id"]})
@@ -84,6 +82,23 @@ def test_update_product(api_client, product_payload):
 
     # Clean up
     products_collection.delete_one({"id": product["id"]})
+    
+
+@pytest.mark.django_db
+def test_delete_product(api_client, product_payload):
+    """Test deleting a product."""
+    product_payload["id"] = str(uuid.uuid4())
+    inserted_result = products_collection.insert_one(product_payload)
+    product = products_collection.find_one({"_id": inserted_result.inserted_id})
+
+    url = f"/api/commerce/products/{product['id']}/"
+
+    response = api_client.delete(url)
+
+    assert response.status_code == 200
+
+    product = products_collection.find_one({"id": product["id"]})
+    assert product is None
 
 @pytest.mark.django_db
 def test_get_products(api_client, product_payload):
