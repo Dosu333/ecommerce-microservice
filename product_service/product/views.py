@@ -1,10 +1,11 @@
+import uuid
 from rest_framework import views, status
 from rest_framework.response import Response
+from decouple import config
 from core.database import products_collection, categories_collection
 from core.utils import upload_images
 from .serializers import ProductSerializer, CategorySerializer
-from decimal import Decimal
-import uuid
+from .tasks import upload_product_image_to_cloudinary
 
 
 class CategoryAPIView(views.APIView):
@@ -35,17 +36,23 @@ class ProductAPIView(views.APIView):
     
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
+        placeholder_image = config('PRODUCT_PLACEHOLDER_IMAGE_URL')
+        websocket_url = config('WEBSOCKET_URL')
+        
         if serializer.is_valid():
             product_data = serializer.validated_data
             product_data['id'] = str(uuid.uuid4())
             images = request.FILES.getlist('images', [])
-            product_data['images'] = upload_images(images)
-            
-            # Convert Decimal fields to float
-            for key, value in product_data.items():
-                if isinstance(value, Decimal):
-                    product_data[key] = float(value)
-            
+            product_data['images'] = [placeholder_image] * len(images) if len(images) else []
+            product_data['price'] = float(product_data['price'])
             products_collection.insert_one(product_data)
-            return Response({'status': 200, 'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
+            
+            for image in images:
+                upload_product_image_to_cloudinary.apply_async(image.read(), product_data['id'])
+            
+            return Response({
+                'status': 200, 
+                'message': 'Product created successfully',
+                'websocket_url': f'{websocket_url}/products/{product_data["id"]}/'
+                }, status=status.HTTP_201_CREATED)
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
