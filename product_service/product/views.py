@@ -70,21 +70,17 @@ class ProductAPIView(views.APIView):
             placeholder_image = config('PRODUCT_PLACEHOLDER_IMAGE_URL')
             websocket_url = config('WEBSOCKET_URL')
 
-            # Retrieve existing images
             existing_images = product.get("images", [])
 
             # Remove images specified in `remove_images`
             updated_images = [img for img in existing_images if img not in remove_images]
-
-            # Add new placeholder images for each uploaded image
             new_placeholder_images = [placeholder_image] * len(images)
             product_data['images'] = updated_images + new_placeholder_images if images else updated_images
 
-            # Convert price to float if it's present
             if "price" in product_data:
                 product_data['price'] = float(product_data['price'])
 
-            # Update product in MongoDB
+            # Update product in DB
             update_fields = {"$set": product_data}
             products_collection.update_one({"id": product_id}, update_fields)
 
