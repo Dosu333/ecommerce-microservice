@@ -9,6 +9,12 @@ class CategorySerializer(serializers.Serializer):
     slug = serializers.SlugField(read_only=True)
     description = serializers.CharField(required=False)
     
+    def validate_name(self, value):
+        category = categories_collection.find_one({"name": value})
+        if category:
+            raise CustomValidationError("Category with this name already exists")
+        return value
+    
 
 class ProductSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=255, read_only=True)
