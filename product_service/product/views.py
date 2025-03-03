@@ -43,7 +43,7 @@ class ProductAPIView(views.APIView):
             product_data = serializer.validated_data
             product_data['id'] = str(uuid.uuid4())
             images = request.FILES.getlist('images', [])
-            product_data['images'] = [placeholder_image] * len(images) if len(images) else []
+            product_data['images'] = [placeholder_image] * len(images) if len(images) else [placeholder_image]
             product_data['price'] = float(product_data['price'])
             products_collection.insert_one(product_data)
             
