@@ -36,6 +36,7 @@ def test_create_product(api_client, product_payload):
     # Mock Cloudinary upload
     with patch("cloudinary.uploader.upload") as mock_upload:
         mock_upload.return_value = {"secure_url": "http://fake-cloudinary.com/image.jpg"}
+        product_payload["id"] = str(uuid.uuid4())
 
         response = api_client.post(url, product_payload, format="json")
         assert response.status_code == 201
@@ -110,3 +111,18 @@ def test_get_products(api_client, product_payload):
 
     assert response.status_code == 200
     assert len(response.data["data"]) > 0
+
+@pytest.mark.django_db
+def test_get_product(api_client, product_payload):
+    """Test retrieving a single product."""
+    product_payload["id"] = str(uuid.uuid4())
+    inserted_result = products_collection.insert_one(product_payload)
+    product = products_collection.find_one({"_id": inserted_result.inserted_id})
+
+    url = f"/api/commerce/products/{product['id']}/"
+    response = api_client.get(url)
+
+    assert response.status_code == 200
+    assert response.data["data"]["id"] == product_payload["id"]
+
+    products_collection.delete_one({"id": product["id"]})

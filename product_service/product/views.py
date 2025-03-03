@@ -1,4 +1,5 @@
 import uuid
+from django.utils.text import slugify
 from rest_framework import views, status
 from rest_framework.response import Response
 from decouple import config
@@ -29,7 +30,13 @@ class CategoryAPIView(views.APIView):
 class ProductAPIView(views.APIView):
     serializer_class = ListProductSerializer
     
-    def get(self, request):
+    def get(self, request, product_id=None):
+        if product_id:
+            product = products_collection.find_one({"id": product_id}, {"_id": 0})
+            if not product:
+                return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+            serializer = ListProductSerializer(product)
+            return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
         products = products_collection.find({}, {"_id": 0})
         serializer = ListProductSerializer(products, many=True)
         return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
@@ -45,6 +52,7 @@ class ProductAPIView(views.APIView):
             images = request.FILES.getlist('images', [])
             product_data['images'] = [placeholder_image] * len(images) if len(images) else [placeholder_image]
             product_data['price'] = float(product_data['price'])
+            product_data['slug'] = slugify(product_data['name']) + '-' + product_data['id'][:8]
             products_collection.insert_one(product_data)
             
             for image in images:

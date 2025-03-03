@@ -6,6 +6,7 @@ from core.database import categories_collection
 class CategorySerializer(serializers.Serializer):
     id = serializers.CharField(max_length=255, read_only=True)
     name = serializers.CharField(max_length=255)
+    slug = serializers.SlugField(read_only=True)
     description = serializers.CharField(required=False)
     
 
@@ -13,6 +14,7 @@ class ProductSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=255, read_only=True)
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(required=False)
+    slug = serializers.SlugField(read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField()
     
