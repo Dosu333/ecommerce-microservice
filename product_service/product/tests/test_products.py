@@ -39,13 +39,51 @@ def test_create_product(api_client, product_payload):
 
         response = api_client.post(url, product_payload, format="json")
         assert response.status_code == 201
-        assert response.data["status"] == 200
+        assert response.data["status"] == 201
         assert "Product created successfully" in response.data["message"]
 
         # Ensure product is inserted into DB
         product = products_collection.find_one({"name": "Laptop"})
         assert product is not None
-        # products_collection.delete_one({"id": product["id"]})
+        products_collection.delete_one({"id": product["id"]})
+        
+@pytest.mark.django_db
+def test_update_product(api_client, product_payload):
+    """Test updating a product."""
+    # Insert test product into MongoDB
+    product_payload["id"] = str(uuid.uuid4())
+    inserted_result = products_collection.insert_one(product_payload)
+    product = products_collection.find_one({"_id": inserted_result.inserted_id})
+
+    url = f"/api/commerce/products/{product['id']}/"
+
+    # Mock Cloudinary upload
+    with patch("cloudinary.uploader.upload") as mock_upload:
+        mock_upload.return_value = {"secure_url": "http://fake-cloudinary.com/image.jpg"}
+        
+        updated_data = {
+            "name": "Updated Laptop",
+            "description": "High performance laptop",
+            "price": "999.99",
+            "stock": 10,
+            "category_id": product["category_id"],
+            "images": []
+        }
+
+        response = api_client.put(url, updated_data, format="json")
+
+        # Assertions
+        assert response.status_code == 200
+        assert response.data["status"] == 200
+        assert "Product updated successfully" in response.data["message"]
+
+        # Ensure product is updated in MongoDB
+        updated_product = products_collection.find_one({"id": product["id"]})
+        assert updated_product is not None
+        assert updated_product["name"] == "Updated Laptop"
+
+    # Clean up
+    products_collection.delete_one({"id": product["id"]})
 
 @pytest.mark.django_db
 def test_get_products(api_client, product_payload):

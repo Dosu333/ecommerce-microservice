@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from decouple import config
 from core.database import products_collection, categories_collection
 from core.utils import upload_images
-from .serializers import ProductSerializer, CategorySerializer
+from .serializers import CategorySerializer, CreateProductSerializer, ListProductSerializer, UpdateProductSerializer
 from .tasks import upload_product_image_to_cloudinary
 
 
@@ -27,15 +27,15 @@ class CategoryAPIView(views.APIView):
 
 
 class ProductAPIView(views.APIView):
-    serializer_class = ProductSerializer
+    serializer_class = ListProductSerializer
     
     def get(self, request):
         products = products_collection.find({}, {"_id": 0})
-        serializer = ProductSerializer(products, many=True)
+        serializer = ListProductSerializer(products, many=True)
         return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
     
     def post(self, request):
-        serializer = ProductSerializer(data=request.data)
+        serializer = CreateProductSerializer(data=request.data)
         placeholder_image = config('PRODUCT_PLACEHOLDER_IMAGE_URL')
         websocket_url = config('WEBSOCKET_URL')
         
@@ -51,8 +51,51 @@ class ProductAPIView(views.APIView):
                 upload_product_image_to_cloudinary.apply_async(image.read(), product_data['id'])
             
             return Response({
-                'status': 200, 
+                'status': 201, 
                 'message': 'Product created successfully',
                 'websocket_url': f'{websocket_url}/products/{product_data["id"]}/'
                 }, status=status.HTTP_201_CREATED)
+        return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, product_id):
+        product = products_collection.find_one({"id": product_id})
+        if not product:
+            return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UpdateProductSerializer(data=request.data)
+        if serializer.is_valid():
+            product_data = serializer.validated_data
+            images = request.FILES.getlist('images', [])
+            remove_images = request.data.get('remove_images', [])
+            placeholder_image = config('PRODUCT_PLACEHOLDER_IMAGE_URL')
+            websocket_url = config('WEBSOCKET_URL')
+
+            # Retrieve existing images
+            existing_images = product.get("images", [])
+
+            # Remove images specified in `remove_images`
+            updated_images = [img for img in existing_images if img not in remove_images]
+
+            # Add new placeholder images for each uploaded image
+            new_placeholder_images = [placeholder_image] * len(images)
+            product_data['images'] = updated_images + new_placeholder_images if images else updated_images
+
+            # Convert price to float if it's present
+            if "price" in product_data:
+                product_data['price'] = float(product_data['price'])
+
+            # Update product in MongoDB
+            update_fields = {"$set": product_data}
+            products_collection.update_one({"id": product_id}, update_fields)
+
+            # Upload new images to Cloudinary asynchronously
+            for image in images:
+                upload_product_image_to_cloudinary.apply_async((image.read(), product_id))
+
+            return Response({
+                'status': 200,
+                'message': 'Product updated successfully',
+                'websocket_url': f'{websocket_url}/products/{product_id}/'
+            }, status=status.HTTP_200_OK)
+
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
