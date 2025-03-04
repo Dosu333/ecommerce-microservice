@@ -12,7 +12,13 @@ def api_client():
 
 @pytest.fixture
 def category():
-    category_data = {"id": str(uuid.uuid4()), "name": "Electronics"}
+    category_data = {
+        "id": str(uuid.uuid4()), 
+        "name": "Electronics",
+        "slug": "electronics",
+        "description": "Electronic gadgets",
+        "attributes": ["color", "size"]
+    }
     categories_collection.insert_one(category_data)
     yield category_data
     categories_collection.delete_one({"id": category_data["id"]})
@@ -25,7 +31,26 @@ def product_payload(category):
         "price": "999.99",
         "stock": 10,
         "category_id": category["id"],
-        "images": []
+        "images": [],
+        "attributes": {
+            "color": "black",
+            "size": "15 inches"
+        }
+    }
+    
+@pytest.fixture
+def bad_product_payload(category):
+    return {
+        "name": "Bad Laptop",
+        "description": "High performance laptop",
+        "price": "999.99",
+        "stock": 10,
+        "category_id": category["id"],
+        "images": [],
+        "attributes": {
+            "brand": "black",
+            "size": "15 inches"
+        }
     }
 
 @pytest.mark.django_db
@@ -46,6 +71,20 @@ def test_create_product(api_client, product_payload):
         product = products_collection.find_one({"name": "Laptop"})
         assert product is not None
         products_collection.delete_one({"id": product["id"]})
+        
+@pytest.mark.django_db
+def test_create_invalid_product(api_client, bad_product_payload):
+    """Test creating a product."""
+    url = "/api/commerce/products/"
+    
+    # Mock Cloudinary upload
+    with patch("cloudinary.uploader.upload") as mock_upload:
+        mock_upload.return_value = {"secure_url": "http://fake-cloudinary.com/image.jpg"}
+        bad_product_payload["id"] = str(uuid.uuid4())
+
+        response = api_client.post(url, bad_product_payload, format="json")
+        assert response.status_code == 400
+        assert response.data["status"] == 400
         
 @pytest.mark.django_db
 def test_update_product(api_client, product_payload):

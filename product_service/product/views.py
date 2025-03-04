@@ -21,6 +21,7 @@ class CategoryAPIView(views.APIView):
         if serializer.is_valid():
             category_data = serializer.validated_data
             category_data['id'] = str(uuid.uuid4())
+            category_data['slug'] = slugify(product_data['name']) + '-' + product_data['id'][:8]
             categories_collection.insert_one(category_data)
             return Response({'status': 200, 'message': 'Category created successfully'}, status=status.HTTP_201_CREATED)
         

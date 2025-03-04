@@ -8,6 +8,7 @@ class CategorySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     slug = serializers.SlugField(read_only=True)
     description = serializers.CharField(required=False)
+    attributes = serializers.ListField(child=serializers.CharField(), required=False, default=[])
     
     def validate_name(self, value):
         category = categories_collection.find_one({"name": value})
@@ -23,6 +24,14 @@ class ProductSerializer(serializers.Serializer):
     slug = serializers.SlugField(read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField()
+    attributes = serializers.DictField(child=serializers.CharField(), required=False, default={})
+    
+    def validate_attributes(self, value):
+        category = categories_collection.find_one({"id": self.initial_data["category_id"]})
+        for attribute in value:
+            if attribute not in category["attributes"]:
+                raise CustomValidationError(f"Invalid attribute: {attribute} for category: {category['name']}")
+        return value    
     
 
 class CreateProductSerializer(ProductSerializer):
