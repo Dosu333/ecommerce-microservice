@@ -137,11 +137,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Rest Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    #     'rest_framework.authentication.BasicAuthentication',
-    #     'rest_framework.authentication.SessionAuthentication',
-    # ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+       'core.authentication.CustomJWTAuthentication',
+    ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler'
 }
@@ -183,6 +181,9 @@ LOGGING = {
         },
     }
 }
+
+# JWT settings
+JWT_SECRET = config('JWT_SECRET')
 
 # Spectacular settings
 SPECTACULAR_SETTINGS = {

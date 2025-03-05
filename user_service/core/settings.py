@@ -203,6 +203,15 @@ LOGGING = {
     }
 }
 
+# JWT settings
+JWT_SECRET = config('JWT_SECRET')
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'SIGNING_KEY': JWT_SECRET,
+}
+
 # Spectacular settings
 SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': r'/api',
