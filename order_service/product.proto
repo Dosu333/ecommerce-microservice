@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+    rpc CheckStock (ProductRequest) returns (ProductResponse);
+}
+
+message ProductRequest {
+    string id = 1;
+}
+
+message ProductResponse {
+    bool available = 1;
+    float price = 2;
+}
