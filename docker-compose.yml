@@ -1,7 +1,7 @@
 services:
-  postgres:
+  user_postgres:
     image: postgres:14.1-alpine
-    container_name: postgres_db
+    container_name: user_db
     restart: always
     env_file:
       - ./.env
@@ -11,6 +11,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  order_postgres:
+    image: postgres:14.1-alpine
+    container_name: order_db
+    restart: always
+    env_file:
+      - ./order_service/.env
+    networks:
+      - ecommerce-network
+    ports:
+      - "5433:5432"
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
 
   redis:
     image: bitnami/redis:latest
@@ -28,7 +41,7 @@ services:
     container_name: user-service
     restart: always
     depends_on:
-      - postgres
+      - user_postgres
       - redis
     env_file:
       - ./.env
@@ -53,6 +66,23 @@ services:
     volumes:
       - ./product_service:/app
     command: python manage.py runserver 0.0.0.0:8002
+
+  order-service:
+    build: ./order_service
+    container_name: order-service
+    restart: always
+    depends_on:
+      - order_postgres
+      - redis
+    env_file:
+      - ./order_service/.env
+    networks:
+      - ecommerce-network
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./order_service:/app
+    command: python manage.py runserver 0.0.0.0:8003
 
   celery_worker_user:
     build: ./user_service
@@ -121,3 +151,4 @@ networks:
 
 volumes:
   postgres_data:
+  order_postgres_data:
