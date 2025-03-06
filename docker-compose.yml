@@ -23,9 +23,9 @@ services:
     ports:
       - "6379:6379"
 
-  user_service:
+  user-service:
     build: ./user_service
-    container_name: user_service
+    container_name: user-service
     restart: always
     depends_on:
       - postgres
@@ -40,9 +40,9 @@ services:
       - ./user_service:/app
     command: python manage.py runserver 0.0.0.0:8000
 
-  product_service:
+  product-service:
     build: ./product_service
-    container_name: product_service
+    container_name: product-service
     restart: always
     env_file:
       - ./.env
@@ -54,20 +54,35 @@ services:
       - ./product_service:/app
     command: python manage.py runserver 0.0.0.0:8002
 
-  celery_worker:
+  celery_worker_user:
     build: ./user_service
-    container_name: celery_worker
+    container_name: user_service_celery_worker
     restart: always
     depends_on:
       - redis
-      - user_service
+      - user-service
     env_file:
       - ./.env
     networks:
       - ecommerce-network
     volumes:
       - ./user_service:/app
-    command: celery -A core worker --loglevel=info --logfile=logs/celery.log
+    command: celery -A core worker --loglevel=info --queues=user_queue --logfile=logs/celery.log
+
+  celery_worker_product:
+    build: ./product_service
+    container_name: product_service_celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - product-service
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./product_service:/app
+    command: celery -A core worker --loglevel=info --queues=product_queue --logfile=logs/celery.log
 
   celery_beat:
     build: ./user_service
@@ -75,7 +90,7 @@ services:
     restart: always
     depends_on:
       - redis
-      - celery_worker
+      - celery_worker_user
     env_file:
       - ./.env
     networks:
@@ -90,7 +105,8 @@ services:
     restart: always
     depends_on:
       - redis
-      - celery_worker
+      - celery_worker_user
+      - celery_worker_product
     env_file:
       - ./.env
     networks:

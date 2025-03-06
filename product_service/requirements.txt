@@ -13,6 +13,7 @@ drf-spectacular-sidecar
 email_validator==2.2.0
 flower==2.0.1
 gunicorn==23.0.0
+PyJWT==2.9.0
 pymongo==4.11.1
 pytest==8.3.3
 pytest-asyncio

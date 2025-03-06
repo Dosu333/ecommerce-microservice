@@ -8,7 +8,12 @@ if not settings.configured:
     # set the default Django settings module for the 'celery' program.
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')  # pragma: no cover
 
-APP = Celery('core')
+APP = Celery(
+    "core",
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
+    include=["product.tasks"]
+)
 
 
 class CeleryConfig(AppConfig):

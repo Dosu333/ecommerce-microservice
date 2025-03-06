@@ -10,10 +10,11 @@ def test_upload_product_image_to_cloudinary():
     """Test Celery task for uploading images to Cloudinary."""
     product_id = str(uuid.uuid4())
     catgory_id = str(uuid.uuid4())
-    category_data = {"id": catgory_id, "name": "Electronics"}
+    category_data = {"id": catgory_id, "name": "Electronics", 'vendor_id': str(uuid.uuid4())}
     category = categories_collection.insert_one(category_data)
     product_data = {
         "id": product_id,
+        "vendor_id": str(uuid.uuid4()),
         "name": "Laptop",
         "description": "High performance laptop",
         "price": 999.99,

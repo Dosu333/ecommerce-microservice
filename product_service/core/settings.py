@@ -25,10 +25,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('PRODUCT_SERVICE_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', 'product_service']
+INTERNAL_IPS = ["127.0.0.1"]
+if DEBUG:
+    import os  # only if you haven't already imported this
+    import socket  # only if you haven't already imported this
 
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -39,8 +48,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'rest_framework',
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "core.celery.CeleryConfig",
     "corsheaders",
     "channels",
     "product",
@@ -185,6 +196,8 @@ LOGGING = {
 # JWT settings
 JWT_SECRET = config('JWT_SECRET')
 
+FLOWER_BASIC_AUTH = config('FLOWER_BASIC_AUTH')
+
 # Spectacular settings
 SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': r'/api',
@@ -214,12 +227,25 @@ SPECTACULAR_SETTINGS = {
     'OAUTH2_SCOPES': None,
 }
 
+# Celery settings
 REDIS_URL = config('REDIS_URL')
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_QUEUES = {
+    "product_queue": {
+        "exchange": "product_exchange",
+        "exchange_type": "direct",
+        "binding_key": "product",
+    }
+}
+
+CELERY_TASK_ROUTES = {
+    "product.tasks.*": {"queue": "product_queue"},
+}
+
 
 # Cache settings
 CACHES = {

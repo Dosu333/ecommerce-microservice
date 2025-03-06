@@ -5,7 +5,7 @@ from django.conf import settings
 
 class JWTUser:
     def __init__(self, payload):
-        self.id = payload.get('id')
+        self.id = payload.get('user_id')
         self.fullname = payload.get('fullname')
         self.email = payload.get('email')
         self.roles = payload.get('roles')
