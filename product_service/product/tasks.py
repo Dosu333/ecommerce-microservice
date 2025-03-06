@@ -34,3 +34,11 @@ def upload_product_image_to_cloudinary(image_data, product_id):
     except Exception as e:
         logger.error(f"Error uploading image: {e}")
         return None  
+
+@APP.task   
+def update_category_name(category_id, new_name):
+    """Update category_name in all products that belong to this category."""
+    products_collection.update_many(
+        {"category_id": category_id},  # Find all products with this category_id
+        {"$set": {"category_name": new_name}}  # Update category_name
+    )

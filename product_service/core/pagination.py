@@ -9,20 +9,15 @@ class CustomPagination(PageNumberPagination):
 
     def paginate_queryset(self, queryset, request, view=None):
         """Paginate MongoDB query results."""
-        page_size = int(request.query_params.get(self.page_size_query_param, 20))
-        current_page = int(request.query_params.get('page', DEFAULT_PAGE))
+        self.page_size = int(request.query_params.get(self.page_size_query_param, 20))
+        self.current_page = int(request.query_params.get('page', DEFAULT_PAGE))
 
-        total_items = queryset.collection.count_documents({}) 
+        self.total_items = queryset.collection.count_documents({}) 
 
-        if total_items == 0:
+        if self.total_items == 0:
             return []
 
-        self.page = queryset.skip((current_page - 1) * page_size).limit(page_size)
-
-        # Store metadata
-        self.total_items = total_items
-        self.page_size = page_size
-        self.current_page = current_page
+        self.page = queryset.skip((self.current_page - 1) * self.page_size).limit(self.page_size)
         
         return list(self.page)
     

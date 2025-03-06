@@ -9,7 +9,7 @@ from core.permissions import IsCustomer, IsVendor
 from core.pagination import CustomPagination
 from core.utils import upload_images
 from .serializers import CategorySerializer, CreateProductSerializer, ListProductSerializer, UpdateProductSerializer
-from .tasks import upload_product_image_to_cloudinary
+from .tasks import upload_product_image_to_cloudinary, update_category_name
 
 
 class CategoryAPIView(views.APIView):
@@ -54,44 +54,78 @@ class CategoryAPIView(views.APIView):
             return Response({'status': 200, 'message': 'Category created successfully'}, status=status.HTTP_201_CREATED)
         
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    def put(self, request, category_id):
+        category = categories_collection.find_one({"id": category_id})
+        if not category:
+            return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            category_data = serializer.validated_data
+            categories_collection.update_one({"id": category_id}, {"$set": category_data})
+            update_category_name.apply_async((category_id, category_data['name']))
+            return Response({'status': 200, 'message': 'Category updated successfully'}, status=status.HTTP_200_OK)
+        
+        return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, category_id):
+        category = categories_collection.find_one({"id": category_id})
+        if not category:
+            return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        categories_collection.delete_one({"id": category_id})
+        return Response({'status': 200, 'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
+    
 
 class ProductAPIView(views.APIView):
     serializer_class = ListProductSerializer
-    
+
     def get_permissions(self):
-        """Define permissions dynamically based on request method."""
-        permission_classes = [IsAuthenticated]  # Default: Authenticated users
+        permission_classes = [IsAuthenticated]
         if self.request.method != 'GET':
-            permission_classes.append(IsVendor)  # Require IsVendor for non-GET requests
+            permission_classes.append(IsVendor)
         return [permission() for permission in permission_classes]
 
     def get(self, request, product_id=None):
-        """Handles GET requests for a single product or a paginated list of products."""
+        """Handles GET requests with search capabilities."""
         if product_id:
-            # Ensure product_id matches the stored format (int or str)
             product = products_collection.find_one({"id": product_id}, {"_id": 0})
             if not product:
                 return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
-            
+
             serializer = self.serializer_class(product)
             return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
 
-        # Instantiate paginator
+        # Get query params
+        search_query = request.query_params.get('q', None)
+        category_name = request.query_params.get('category', None)
+        vendor_id = request.query_params.get('vendor', None)
+
+        # Define the query
+        query = {}
+
+        # Search by name and description
+        if search_query:
+            query["name"] = {"$regex": search_query, "$options": "i"}
+            query['description'] = {"$regex": search_query, "$options": "i"}
+
+        # Filter by category
+        if category_name:
+            query["category_name"] = {"$regex": category_name, "$options": "i"}
+
+        # Filter by vendor
+        if vendor_id:
+            query["vendor_id"] = vendor_id
+
+        # Get products based on filters
+        products_cursor = products_collection.find(query, {"_id": 0})
+
+        # Implement pagination
         paginator = CustomPagination()
-
-        # Filter products based on vendor permission
-        query_filter = {"vendor_id": request.user.id} if IsVendor().has_permission(request, self) else {}
-
-        # Get MongoDB cursor
-        products_cursor = products_collection.find(query_filter, {"_id": 0})
-
-        # Paginate query result
         paginated_products = paginator.paginate_queryset(products_cursor, request)
-        if not paginated_products:
-            return Response({"message": "No products found"}, status=status.HTTP_200_OK)
 
-        # Serialize paginated results
+        # Serialize and return results
         data = self.serializer_class(paginated_products, many=True).data
         return paginator.get_paginated_response(data)
 

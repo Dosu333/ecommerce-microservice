@@ -41,6 +41,7 @@ class ProductSerializer(serializers.Serializer):
 
 class CreateProductSerializer(ProductSerializer):
     category_id = serializers.CharField(max_length=255, write_only=True)
+    category_name = serializers.CharField(max_length=255)
     
     def validate_attributes(self, value):
         category = categories_collection.find_one({"id": self.initial_data["category_id"], "vendor_id": self.initial_data["vendor_id"]})
@@ -55,6 +56,7 @@ class CreateProductSerializer(ProductSerializer):
             raise CustomValidationError("Invalid category_id")
         if category["vendor_id"] != self.initial_data["vendor_id"]:
             raise CustomValidationError("You can only create products for your own categories")
+        self.initial_data["category_name"] = category["name"]
         return value
 
 

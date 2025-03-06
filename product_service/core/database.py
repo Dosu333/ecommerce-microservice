@@ -9,3 +9,10 @@ client = MongoClient(MONGO_URI)
 db = client[MONGO_DB_NAME]
 products_collection = db["products"]
 categories_collection = db["categories"]
+
+products_collection.create_index([
+    ("name", "text"),
+    ("description", "text"),
+    ("category_name", "text")
+])
+
