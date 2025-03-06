@@ -31,7 +31,10 @@ class CategoryAPIView(views.APIView):
             serializer = self.serializer_class(category)
             return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
         paginator = CustomPagination()
+        search_query = request.query_params.get('q', None)
         query_filter = {"vendor_id": request.user.id} if IsVendor().has_permission(request, self) else {}
+        if search_query:
+            query_filter["name"] = {"$regex": search_query, "$options": "i"}
         categories_cursor = categories_collection.find(query_filter, {"_id": 0})
         paginated_categories = paginator.paginate_queryset(categories_cursor, request)
         
@@ -56,7 +59,7 @@ class CategoryAPIView(views.APIView):
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, category_id):
-        category = categories_collection.find_one({"id": category_id})
+        category = categories_collection.find_one({"id": category_id, "vendor_id": request.user.id})
         if not category:
             return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         
@@ -70,7 +73,7 @@ class CategoryAPIView(views.APIView):
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, category_id):
-        category = categories_collection.find_one({"id": category_id})
+        category = categories_collection.find_one({"id": category_id, "vendor_id": request.user.id})
         if not category:
             return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         
@@ -117,6 +120,9 @@ class ProductAPIView(views.APIView):
         # Filter by vendor
         if vendor_id:
             query["vendor_id"] = vendor_id
+        
+        if IsVendor().has_permission(request, self):
+            query["vendor_id"] = request.user.id
 
         # Get products based on filters
         products_cursor = products_collection.find(query, {"_id": 0})
@@ -156,7 +162,7 @@ class ProductAPIView(views.APIView):
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, product_id):
-        product = products_collection.find_one({"id": product_id})
+        product = products_collection.find_one({"id": product_id, "vendor_id": request.user.id})
         if not product:
             return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -196,7 +202,7 @@ class ProductAPIView(views.APIView):
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, product_id):
-        product = products_collection.find_one({"id": product_id})
+        product = products_collection.find_one({"id": product_id, "vendor_id": request.user.id})
         if not product:
             return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
