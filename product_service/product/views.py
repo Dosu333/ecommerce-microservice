@@ -22,7 +22,14 @@ class CategoryAPIView(views.APIView):
             permission_classes.append(IsVendor) 
         return [permission() for permission in permission_classes]
 
-    def get(self, request):
+    def get(self, request, category_id=None):
+        if category_id:
+            category = categories_collection.find_one({"id": category_id}, {"_id": 0})
+            if not category:
+                return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            serializer = self.serializer_class(category)
+            return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
         paginator = CustomPagination()
         query_filter = {"vendor_id": request.user.id} if IsVendor().has_permission(request, self) else {}
         categories_cursor = categories_collection.find(query_filter, {"_id": 0})
