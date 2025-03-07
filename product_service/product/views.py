@@ -24,7 +24,10 @@ class CategoryAPIView(views.APIView):
 
     def get(self, request, category_id=None):
         if category_id:
-            category = categories_collection.find_one({"id": category_id}, {"_id": 0})
+            if IsVendor().has_permission(request, self):
+                category = categories_collection.find_one({"id": category_id, "vendor_id": request.user.id}, {"_id": 0})
+            else: 
+                category = categories_collection.find_one({"id": category_id}, {"_id": 0})
             if not category:
                 return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
             
@@ -32,7 +35,8 @@ class CategoryAPIView(views.APIView):
             return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
         paginator = CustomPagination()
         search_query = request.query_params.get('q', None)
-        query_filter = {"vendor_id": request.user.id} if IsVendor().has_permission(request, self) else {}
+        query_filter = {"is_active": True}
+        query_filter["vendor_id"] = request.user.id if IsVendor().has_permission(request, self) else ""
         if search_query:
             query_filter["name"] = {"$regex": search_query, "$options": "i"}
         categories_cursor = categories_collection.find(query_filter, {"_id": 0})
@@ -77,7 +81,7 @@ class CategoryAPIView(views.APIView):
         if not category:
             return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        categories_collection.delete_one({"id": category_id})
+        categories_collection.delete_one({"id": category_id}, {"$set": {"is_active": False}})
         return Response({'status': 200, 'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
     
 
@@ -93,7 +97,10 @@ class ProductAPIView(views.APIView):
     def get(self, request, product_id=None):
         """Handles GET requests with search capabilities."""
         if product_id:
-            product = products_collection.find_one({"id": product_id}, {"_id": 0})
+            if IsVendor().has_permission(request, self):
+                product = products_collection.find_one({"id": product_id, "vendor_id": request.user.id}, {"_id": 0})
+            else:
+                product = products_collection.find_one({"id": product_id}, {"_id": 0})
             if not product:
                 return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -106,7 +113,7 @@ class ProductAPIView(views.APIView):
         vendor_id = request.query_params.get('vendor', None)
 
         # Define the query
-        query = {}
+        query = {"is_active": True}
 
         # Search by name and description
         if search_query:
@@ -206,5 +213,5 @@ class ProductAPIView(views.APIView):
         if not product:
             return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        products_collection.delete_one({"id": product_id})
+        products_collection.update_one({"id": product_id}, {"$set": {"is_active": False}})
         return Response({'status': 200, 'message': 'Product deleted successfully'}, status=status.HTTP_200_OK)

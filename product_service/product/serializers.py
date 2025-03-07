@@ -22,6 +22,7 @@ class CategorySerializer(serializers.Serializer):
     slug = serializers.SlugField(read_only=True)
     description = serializers.CharField(required=False)
     attributes = serializers.ListField(child=serializers.CharField(), required=False, default=[])
+    is_active = serializers.BooleanField(default=False)
     
     def validate_name(self, value):
         category = categories_collection.find_one({"name": value, "vendor_id": self.initial_data.get("vendor_id")})
@@ -38,6 +39,7 @@ class ProductSerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField() 
     attributes = serializers.DictField(child=serializers.CharField(), required=False, default={})
+    is_active = serializers.BooleanField(default=False)
 
 class CreateProductSerializer(ProductSerializer):
     category_id = serializers.CharField(max_length=255, write_only=True)
