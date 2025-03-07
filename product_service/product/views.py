@@ -9,7 +9,7 @@ from core.permissions import IsCustomer, IsVendor
 from core.pagination import CustomPagination
 from core.utils import upload_images
 from .serializers import CategorySerializer, CreateProductSerializer, ListProductSerializer, UpdateProductSerializer
-from .tasks import upload_product_image_to_cloudinary, update_category_name
+from .tasks import upload_product_image_to_cloudinary, update_category_name, update_product_status
 
 
 class CategoryAPIView(views.APIView):
@@ -82,6 +82,7 @@ class CategoryAPIView(views.APIView):
             return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         
         categories_collection.delete_one({"id": category_id}, {"$set": {"is_active": False}})
+        update_product_status.apply_async((category_id, ))
         return Response({'status': 200, 'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
     
 

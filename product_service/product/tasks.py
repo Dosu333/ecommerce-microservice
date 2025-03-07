@@ -42,3 +42,11 @@ def update_category_name(category_id, new_name):
         {"category_id": category_id},  # Find all products with this category_id
         {"$set": {"category_name": new_name}}  # Update category_name
     )
+    
+@APP.task   
+def update_product_status(category_id, status=False):
+    """Update is_active in all products that belong to this category."""
+    products_collection.update_many(
+        {"category_id": category_id},  # Find all products with this category_id
+        {"$set": {"is_active": status}}  # Update is_active
+    )
