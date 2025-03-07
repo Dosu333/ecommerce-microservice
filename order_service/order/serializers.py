@@ -3,7 +3,9 @@ from core.grpc import get_product_detail
 from .models import Order
 
 class OrderSerializer(serializers.ModelSerializer):
+    address = serializers.CharField(required=True, error_messages={"required": "Address field is required."})
     product_data = serializers.SerializerMethodField()
+    
     class Meta:
         model = Order
         fields = "__all__"

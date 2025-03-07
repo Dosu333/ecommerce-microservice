@@ -9,8 +9,8 @@ class ProductService(product_pb2_grpc.ProductServiceServicer):
     def CheckStock(self, request, context):
         product = products_collection.find_one({"id": request.id})
         if product:
-            return product_pb2.ProductResponse(available=product["stock"] > request.quantity, price=product["price"])
-        return product_pb2.ProductResponse(available=False, price=0.0)
+            return product_pb2.ProductResponse(available=product["stock"] > request.quantity, price=product["price"], vendor=product["vendor_id"])
+        return product_pb2.ProductResponse(available=False, price=0.0, vendor="")
     
     def GetProduct(self, request, context):
         product = products_collection.find_one({"id": request.id})

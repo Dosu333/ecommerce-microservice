@@ -19,6 +19,7 @@ message ProductIdRequest {
 message ProductResponse {
     bool available = 1;
     double price = 2;
+    string vendor = 3;
 }
 
 message ProductDetailResponse {
