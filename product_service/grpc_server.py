@@ -11,6 +11,12 @@ class ProductService(product_pb2_grpc.ProductServiceServicer):
         if product:
             return product_pb2.ProductResponse(available=product["stock"] > request.quantity, price=product["price"])
         return product_pb2.ProductResponse(available=False, price=0.0)
+    
+    def GetProduct(self, request, context):
+        product = products_collection.find_one({"id": request.id})
+        if product:
+            return product_pb2.ProductDetailResponse(id=product['id'], name=product['name'], slug=product['slug'], price=product['price'])
+        return product_pb2.ProductDetailResponseResponse(id="", slug="", name="", price=0.0)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

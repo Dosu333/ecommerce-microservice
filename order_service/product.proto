@@ -4,6 +4,7 @@ package product;
 
 service ProductService {
     rpc CheckStock (ProductRequest) returns (ProductResponse);
+    rpc GetProduct (ProductIdRequest) returns (ProductDetailResponse);
 }
 
 message ProductRequest {
@@ -11,7 +12,18 @@ message ProductRequest {
     int32 quantity = 2;
 }
 
+message ProductIdRequest {
+    string id = 1;
+}
+
 message ProductResponse {
     bool available = 1;
     double price = 2;
+}
+
+message ProductDetailResponse {
+    string id = 1;
+    string name = 2;
+    string slug = 3;
+    double price = 4;
 }
