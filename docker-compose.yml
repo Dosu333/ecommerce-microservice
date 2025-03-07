@@ -63,6 +63,7 @@ services:
       - ecommerce-network
     ports:
       - "8002:8002"
+      - "50051:50051"
     volumes:
       - ./product_service:/app
     command: python manage.py runserver 0.0.0.0:8002

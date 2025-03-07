@@ -2,18 +2,14 @@ import grpc
 from concurrent import futures
 import product_pb2
 import product_pb2_grpc
+from core.database import products_collection
 
-# Dummy product data
-PRODUCTS = {
-    "1": {"available": True, "price": 5000.0},
-    "2": {"available": False, "price": 2000.0},
-}
 
 class ProductService(product_pb2_grpc.ProductServiceServicer):
     def CheckStock(self, request, context):
-        product = PRODUCTS.get(request.id, None)
+        product = products_collection.find_one({"id": request.id})
         if product:
-            return product_pb2.ProductResponse(available=product["available"], price=product["price"])
+            return product_pb2.ProductResponse(available=product["stock"] > request.quantity, price=product["price"])
         return product_pb2.ProductResponse(available=False, price=0.0)
 
 def serve():

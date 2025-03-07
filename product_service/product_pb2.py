@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rproduct.proto\x12\x07product\"\x1c\n\x0eProductRequest\x12\n\n\x02id\x18\x01 \x01(\t\"3\n\x0fProductResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\r\n\x05price\x18\x02 \x01(\x02\x32Q\n\x0eProductService\x12?\n\nCheckStock\x12\x17.product.ProductRequest\x1a\x18.product.ProductResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rproduct.proto\x12\x07product\".\n\x0eProductRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"3\n\x0fProductResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\r\n\x05price\x18\x02 \x01(\x01\x32Q\n\x0eProductService\x12?\n\nCheckStock\x12\x17.product.ProductRequest\x1a\x18.product.ProductResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,9 +32,9 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'product_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_PRODUCTREQUEST']._serialized_start=26
-  _globals['_PRODUCTREQUEST']._serialized_end=54
-  _globals['_PRODUCTRESPONSE']._serialized_start=56
-  _globals['_PRODUCTRESPONSE']._serialized_end=107
-  _globals['_PRODUCTSERVICE']._serialized_start=109
-  _globals['_PRODUCTSERVICE']._serialized_end=190
+  _globals['_PRODUCTREQUEST']._serialized_end=72
+  _globals['_PRODUCTRESPONSE']._serialized_start=74
+  _globals['_PRODUCTRESPONSE']._serialized_end=125
+  _globals['_PRODUCTSERVICE']._serialized_start=127
+  _globals['_PRODUCTSERVICE']._serialized_end=208
 # @@protoc_insertion_point(module_scope)
