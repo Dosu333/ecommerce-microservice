@@ -12,10 +12,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ["product_id", "quantity", "unit_price"]
         
     def get_product_data(self, obj):
-        product = get_product_detail(str(obj.product_id))
+        product = check_product_availability(str(obj.product_id), obj.quantity)
         return {
             "name": product.name,
-            "slug": product.slug
+            "slug": product.slug,
+            "is_available": product.available
         }
         
 

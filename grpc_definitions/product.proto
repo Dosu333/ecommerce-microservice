@@ -21,6 +21,7 @@ message ProductResponse {
     double price = 2;
     string vendor = 3;
     string name = 4;
+    string slug = 5;
 }
 
 message ProductDetailResponse {
