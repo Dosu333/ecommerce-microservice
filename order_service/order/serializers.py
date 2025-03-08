@@ -9,7 +9,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     unit_price = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
     class Meta:
         model = OrderItem
-        fields = ["product_id", "quantity", "unit_price"]
+        fields = ["product_id", "quantity", "unit_price", "product_data"]
         
     def get_product_data(self, obj):
         product = check_product_availability(str(obj.product_id), obj.quantity)
@@ -26,7 +26,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "user_id", "status", "total_price", "items", "created_at"]
+        fields = ["id", "user_id", "address", "status", "total_price", "items", "created_at"]
 
     def create(self, validated_data):
         """Create an order with multiple products"""
@@ -35,14 +35,30 @@ class OrderSerializer(serializers.ModelSerializer):
         order_items = []
         
         for item_data in items_data:
-            product_response = check_product_availability(item_data['product_id'], item_data['quantity'])
+            product_response = check_product_availability(str(item_data['product_id']), item_data['quantity'])
             if not product_response.available:
                 if product_response.name:
                     raise CustomValidationError(f"{product_response.name} is out of stock")
                 raise CustomValidationError("Product does not exist")
-            order_items.append(OrderItem(order=order, unit_price=float(product_response.price), **item_data))
-
+            order_items.append(OrderItem(order=order, vendor_id=product_response.vendor, unit_price=float(product_response.price), **item_data))
         OrderItem.objects.bulk_create(order_items)
         order.update_total_price()
         return order
+    
+
+class ListOrderSerializer(OrderSerializer):
+    items = serializers.SerializerMethodField()
+
+    def get_items(self, obj):
+        """Filter order items so vendors only see their items"""
+        request_user = self.context.get("request_user")
+        
+        if request_user and IsVendor().has_permission(request_user, None):
+            # Filter order items for vendor
+            order_items = obj.items.filter(vendor_id=request_user.id)
+        else:
+            # Return all items for customers
+            order_items = obj.items.all()
+
+        return OrderItemSerializer(order_items, many=True).data
 
