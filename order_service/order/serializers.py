@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from core.grpc import get_product_detail, check_product_availability
 from core.exceptions import CustomValidationError
-from .models import Order
+from .models import Order, OrderItem
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -31,20 +31,17 @@ class OrderSerializer(serializers.ModelSerializer):
         """Create an order with multiple products"""
         items_data = validated_data.pop("items")
         order = Order.objects.create(**validated_data)
+        order_items = []
         
-        for item in items_data:
-            product_response = check_product_availability(item['product_id'], item['quantity'])
+        for item_data in items_data:
+            product_response = check_product_availability(item_data['product_id'], item_data['quantity'])
             if not product_response.available:
-                product_detail = get_product_detail(item['product_id'])
-                raise CustomValidationError(f"{product_detail.name} is out of stock")
-            continue
+                if product_response.name:
+                    raise CustomValidationError(f"{product_response.name} is out of stock")
+                raise CustomValidationError("Product does not exist")
+            order_items.append(OrderItem(order=order, **item_data))
 
-        order_items = [
-            OrderItem(order=order, **item_data) for item_data in items_data
-        ]
         OrderItem.objects.bulk_create(order_items)
-
-        # Update total price
         order.update_total_price()
         return order
 
