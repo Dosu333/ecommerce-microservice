@@ -39,7 +39,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 if product_response.name:
                     raise CustomValidationError(f"{product_response.name} is out of stock")
                 raise CustomValidationError("Product does not exist")
-            order_items.append(OrderItem(order=order, **item_data))
+            order_items.append(OrderItem(order=order, unit_price=float(product_response.price), **item_data))
 
         OrderItem.objects.bulk_create(order_items)
         order.update_total_price()
