@@ -4,12 +4,13 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from decouple import config
-from core.database import products_collection, categories_collection
+from core.database import products_collection, categories_collection, reviews_collection
 from core.permissions import IsCustomer, IsVendor
 from core.pagination import CustomPagination
 from core.utils import upload_images
-from .serializers import CategorySerializer, CreateProductSerializer, ListProductSerializer, UpdateProductSerializer
-from .tasks import upload_product_image_to_cloudinary, update_category_name, update_product_status
+from .serializers import (CategorySerializer, CreateProductSerializer, ListProductSerializer, UpdateProductSerializer, 
+                          RetrieveProductSerializer, ReviewSerializer)
+from .tasks import upload_product_image_to_cloudinary, update_category_name, update_product_status, update_product_rating
 
 
 class CategoryAPIView(views.APIView):
@@ -105,7 +106,7 @@ class ProductAPIView(views.APIView):
             if not product:
                 return Response({'status': 404, 'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = self.serializer_class(product)
+            serializer = RetrieveProductSerializer(product)
             return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
 
         # Get query params
@@ -216,3 +217,19 @@ class ProductAPIView(views.APIView):
 
         products_collection.update_one({"id": product_id}, {"$set": {"is_active": False}})
         return Response({'status': 200, 'message': 'Product deleted successfully'}, status=status.HTTP_200_OK)
+    
+
+class ReviewAPIView(views.APIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated, IsCustomer]
+    
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            review_data = serializer.validated_data
+            review_data["id"] = str(uuid.uuid4())
+            review_data["user_id"] = request.user.id
+            reviews_collection.insert_one(review_data)
+            update_product_rating.apply_async((review_data["product_id"],))
+            return Response({"status": 201, "message": "Review created successfully"}, status=status.HTTP_201_CREATED)
+        return Response({"status": 400, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

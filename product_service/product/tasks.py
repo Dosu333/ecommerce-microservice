@@ -1,6 +1,6 @@
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from core.database import products_collection
+from core.database import products_collection, reviews_collection
 from core.celery import APP
 from core.utils import upload_images
 import cloudinary
@@ -50,3 +50,34 @@ def update_product_status(category_id, status=False):
         {"category_id": category_id},  # Find all products with this category_id
         {"$set": {"is_active": status}}  # Update is_active
     )
+    
+@APP.task
+def update_product_rating(product_id):
+    """Update the average rating of a product based on its reviews."""
+    try:
+        # Fetch all reviews for the product
+        reviews = reviews_collection.find({"product_id": product_id})
+        
+        # Calculate the average rating
+        total_rating = 0
+        review_count = 0
+        for review in reviews:
+            total_rating += review.get('rating', 0)
+            review_count += 1
+        
+        if review_count == 0:
+            average_rating = 0
+        else:
+            average_rating = total_rating / review_count
+        
+        # Update the product with the new average rating
+        products_collection.update_one(
+            {"id": product_id},
+            {"$set": {"average_rating": average_rating}}
+        )
+        
+        return average_rating
+    except Exception as e:
+        logger.error(f"Error updating product rating: {e}")
+        return None
+    

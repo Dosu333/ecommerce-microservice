@@ -1,18 +1,45 @@
 from rest_framework import serializers
 from core.exceptions import CustomValidationError
-from core.database import categories_collection
+from core.database import categories_collection, reviews_collection, products_collection
 from core.utils import get_user
 import uuid
 
 
-class VendorSerializer(serializers.Serializer):
+class UserSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=255, read_only=True)
     firstname = serializers.CharField(max_length=255)
     lastname = serializers.CharField(max_length=255)
     email = serializers.EmailField()
     phone = serializers.CharField(max_length=15, required=False)
     address = serializers.CharField(required=False)
+
+
+class VendorSerializer(UserSerializer):
     company = serializers.CharField(required=False)
+    
+    
+class ReviewSerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=255, read_only=True)
+    product_id = serializers.CharField(max_length=225)
+    user_id = serializers.CharField(max_length=225, read_only=True)
+    user = serializers.SerializerMethodField("get_user_details")
+    rating = serializers.IntegerField()
+    review = serializers.CharField()
+    
+    def validate_rating(self, value):
+        if value > 5 or value < 0:
+            raise CustomValidationError("You can only give a rate between 0 and 5")
+        return value
+    
+    def validate_product_id(self, value):
+        product = products_collection.find_one({"id": value})
+        if not product:
+            raise CustomValidationError("Product does not exist")
+        return value
+    
+    def get_user_details(sel, obj):
+        user = get_user(obj["user_id"])
+        return UserSerializer(user).data
     
 
 class CategorySerializer(serializers.Serializer):
@@ -37,9 +64,11 @@ class ProductSerializer(serializers.Serializer):
     description = serializers.CharField(required=False)
     slug = serializers.SlugField(read_only=True)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    average_rating = serializers.DecimalField(max_digits=2, decimal_places=1, default=0.0)
     stock = serializers.IntegerField() 
     attributes = serializers.DictField(child=serializers.CharField(), required=False, default={})
     is_active = serializers.BooleanField(default=False)
+
 
 class CreateProductSerializer(ProductSerializer):
     category_id = serializers.CharField(max_length=255, write_only=True)
@@ -65,15 +94,22 @@ class CreateProductSerializer(ProductSerializer):
 class ListProductSerializer(ProductSerializer):
     images = serializers.ListField(child=serializers.URLField(), read_only=True, default=[])
     category = serializers.SerializerMethodField()
-    vendor = serializers.SerializerMethodField()
     
     def get_category(self, obj):
         category = categories_collection.find_one({"id": obj["category_id"]})
         return CategorySerializer(category).data
     
+class RetrieveProductSerializer(ListProductSerializer):
+    vendor = serializers.SerializerMethodField()
+    reviews = serializers.SerializerMethodField()
+    
     def get_vendor(self, obj):
         vendor = get_user(obj["vendor_id"])
         return VendorSerializer(vendor).data
+    
+    def get_reviews(self, obj):
+        reviews = reviews_collection.find({"product_id": obj["id"]})
+        return ReviewSerializer(reviews, many=True).data
     
 
 class UpdateProductSerializer(CreateProductSerializer):
