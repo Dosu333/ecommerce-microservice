@@ -6,22 +6,22 @@ from django.http import JsonResponse
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
-    if response is not None and isinstance(response.data, dict):
-        message = next(iter(response.data.values()))
-        if isinstance(message, list) and len(message) > 0:
-            message = message[0]
-        response.data = {
-            'status': response.status_code,
-            'message': message
-        }
-    else:
-        return JsonResponse(
-            {
-                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
-                'message': 'An unexpected error occurred.'
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    # if response is not None and isinstance(response.data, dict):
+    #     message = next(iter(response.data.values()))
+    #     if isinstance(message, list) and len(message) > 0:
+    #         message = message[0]
+    #     response.data = {
+    #         'status': response.status_code,
+    #         'message': message
+    #     }
+    # else:
+    #     return JsonResponse(
+    #         {
+    #             'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             'message': 'An unexpected error occurred.'
+    #         },
+    #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    #     )
 
     return response
 
