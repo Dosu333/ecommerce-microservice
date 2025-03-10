@@ -85,6 +85,22 @@ services:
       - ./order_service:/app
     command: python manage.py runserver 0.0.0.0:8003
 
+  cart-service:
+    build: ./cart_service
+    container_name: cart-service
+    restart: always
+    depends_on:
+      - redis
+    env_file:
+      - ./cart_service/.env
+    networks:
+      - ecommerce-network
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./cart_service:/app
+    command: python manage.py runserver 0.0.0.0:8004
+
   celery_worker_user:
     build: ./user_service
     container_name: user_service_celery_worker
