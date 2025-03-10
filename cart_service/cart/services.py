@@ -65,3 +65,8 @@ class CartService:
 
         cache.delete(CartService.CART_KEY.format(user_id=user_id))  # Clear Redis cart
         return cart
+    
+    @staticmethod
+    def clear_cart(user_id):
+        key = CartService.CART_KEY.format(user_id=user_id)
+        cache.delete(key)
