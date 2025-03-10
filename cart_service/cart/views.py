@@ -6,7 +6,7 @@ from .serializers import CartItemSerializer
 from .services import CartService
 
 class CartView(views.APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
         """Retrieve the cart from Redis."""
@@ -35,7 +35,7 @@ class CartView(views.APIView):
 
 class PersistCartView(views.APIView):
     """Move cart from Redis to PostgreSQL when the user checks out."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     def post(self, request):
         cart = CartService.persist_cart(request.user.id)
