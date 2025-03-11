@@ -42,3 +42,14 @@ class PersistCartView(views.APIView):
         if cart:
             return Response({"status": 201, "message": "Cart saved successfully", "cart_id": cart.id}, status=status.HTTP_201_CREATED)
         return Response({"status": 200, "message": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ClearCartView(views.APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    
+    def delete(self, request):
+        try:
+            CartService.clear_cart(request.user.id)
+            return Response({'status': 200, "message": "Cart has been cleared"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'status': 500, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

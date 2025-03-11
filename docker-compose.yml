@@ -145,6 +145,21 @@ services:
       - ./product_service:/app
     command: celery -A core worker --loglevel=info --queues=product_queue --logfile=logs/celery.log
 
+  celery_worker_order:
+    build: ./order_service
+    container_name: order_service_celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - order-service
+    env_file:
+      - ./.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./order_service:/app
+    command: celery -A core worker --loglevel=info --queues=order_queue --logfile=logs/celery.log
+
   celery_beat:
     build: ./user_service
     container_name: celery_beat

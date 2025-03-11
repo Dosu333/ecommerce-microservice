@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "core.celery.CeleryConfig",
     'corsheaders',
     'order'
 ]
@@ -195,11 +196,32 @@ LOGGING = {
 
 # JWT settings
 JWT_SECRET = config('JWT_SECRET')
+FLOWER_BASIC_AUTH = config('FLOWER_BASIC_AUTH')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
     'AUTH_HEADER_TYPES': ('Bearer',),
     'SIGNING_KEY': JWT_SECRET,
+}
+
+
+REDIS_URL = config("REDIS_URL")
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_QUEUES = {
+    "order_queue": {
+        "exchange": "order_exchange",
+        "exchange_type": "direct",
+        "binding_key": "order",
+    }
+}
+
+CELERY_TASK_ROUTES = {
+    "order.tasks.*": {"queue": "order_queue"},
 }
 
 # Spectacular settings

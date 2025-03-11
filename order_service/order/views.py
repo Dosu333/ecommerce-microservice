@@ -3,10 +3,11 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from core.permissions import IsCustomer, IsVendor
-from .models import Order
-from .serializers import OrderSerializer, ListOrderSerializer
 from core.exceptions import CustomValidationError
 from core.grpc import check_product_availability
+from .models import Order
+from .serializers import OrderSerializer, ListOrderSerializer
+from .tasks import clear_cart
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -51,6 +52,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
+        clear_cart.apply_async((request.headers.get("Authorization"), ))
         response.data = {
             'status': response.status_code,
             'message': 'Order has been created successfully',
