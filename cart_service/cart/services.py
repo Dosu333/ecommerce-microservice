@@ -28,7 +28,7 @@ class CartService:
             cart_items.append({"product_id": product_id, "quantity": quantity})
         cart["items"] = cart_items
         serializer = CartSerializer(cart)
-        cache.set(key, serializer.data, timeout=3600)  # Expires in 1 hour
+        cache.set(key, serializer.data)
         return serializer.data
 
     @staticmethod
@@ -42,7 +42,7 @@ class CartService:
         cart["items"] = cart_items
 
         serializer = CartSerializer(cart)
-        cache.set(key, serializer.data, timeout=3600)  # Expires in 1 hour
+        cache.set(key, serializer.data)
         return serializer.data
 
     @staticmethod
