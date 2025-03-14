@@ -13,7 +13,7 @@ redis_client = redis.StrictRedis(host=host, port=port, db=0)
 @APP.task
 def track_abandoned_carts():
     """Move carts older than 24 hours to PostgreSQL"""
-    cutoff_time = (now() - timedelta(minutes=5)).timestamp()
+    cutoff_time = (now() - timedelta(hours=24)).timestamp()
     carts = []
 
     # Get all carts that were last updated more than 24 hours ago
