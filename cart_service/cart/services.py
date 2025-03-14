@@ -9,6 +9,7 @@ import time
 
 host = config("REDIS_HOST")
 port = config("REDIS_PORT")
+cache_timeout = 26*3600
 redis_client = redis.StrictRedis(host=host, port=port, db=0)
 
 class CartService:
@@ -18,8 +19,15 @@ class CartService:
     def get_cart(user_id):
         """Fetch the cart from Redis or create an empty cart."""
         key = CartService.CART_KEY.format(user_id=user_id)
-        cart_data = cache.get(key) or {"items": []}
-        return CartSerializer(cart_data).data
+        abandoned_cart = Cart.objects.filter(user_id=user_id).first()
+        if not abandoned_cart:
+            cache_data = cache.get(key) or {"items": []}
+            cart_data = CartSerializer(cache_data).data
+        else:
+            cart_data = CartSerializer(abandoned_cart).data
+            cache.set(key, cart_data, timeout=cache_timeout)
+            abandoned_cart.delete()
+        return cart_data
 
     @staticmethod
     def add_to_cart(user_id, product_id, quantity=1):
@@ -41,7 +49,7 @@ class CartService:
         cart["items"] = cart_items
         timestamp = time.time()
         serializer = CartSerializer(cart)
-        cache.set(key, serializer.data, timeout=96000)
+        cache.set(key, serializer.data, timeout=cache_timeout)
         
         # Add timestamp to sorted set (float timestamp)
         redis_client.zadd("abandoned_carts", {str(user_id): timestamp})

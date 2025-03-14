@@ -195,7 +195,7 @@ FLOWER_BASIC_AUTH = config('FLOWER_BASIC_AUTH')
 CELERY_BEAT_SCHEDULE = {
     "track_abandoned_carts": {
         "task": "cart.tasks.track_abandoned_carts",
-        "schedule": crontab(minute="*"),
+        "schedule": crontab(minute=0, hour='*'),
     },
 }
 
