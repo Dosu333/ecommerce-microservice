@@ -160,9 +160,24 @@ services:
       - ./order_service:/app
     command: celery -A core worker --loglevel=info --queues=order_queue --logfile=logs/celery.log
 
-  celery_beat:
+  celery_worker_cart:
+    build: ./cart_service
+    container_name: cart_service_celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - cart-service
+    env_file:
+      - ./cart_service/.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./cart_service:/app
+    command: celery -A core worker --loglevel=info --queues=cart_queue --logfile=logs/celery.log
+
+  celery_beat_user:
     build: ./user_service
-    container_name: celery_beat
+    container_name: celery_beat_user
     restart: always
     depends_on:
       - redis
@@ -173,6 +188,21 @@ services:
       - ecommerce-network
     volumes:
       - ./user_service:/app
+    command: celery -A core beat --loglevel=info
+
+  celery_beat_cart:
+    build: ./cart_service
+    container_name: celery_beat_cart
+    restart: always
+    depends_on:
+      - redis
+      - celery_worker_cart
+    env_file:
+      - ./cart_service/.env
+    networks:
+      - ecommerce-network
+    volumes:
+      - ./cart_service:/app
     command: celery -A core beat --loglevel=info
 
   flower:

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "drf_spectacular",
+    "core.celery.CeleryConfig",
     "cart"
 ]
 
@@ -168,8 +170,36 @@ LOGGING = {
     }
 }
 
+# Celery settings
 REDIS_URL = config("REDIS_URL")
 
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_QUEUES = {
+    "cart_queue": {
+        "exchange": "order_exchange",
+        "exchange_type": "direct",
+        "binding_key": "cart",
+    }
+}
+
+CELERY_TASK_ROUTES = {
+    "cart.tasks.*": {"queue": "cart_queue"},
+}
+FLOWER_BASIC_AUTH = config('FLOWER_BASIC_AUTH')
+
+# Celery beat schedules
+CELERY_BEAT_SCHEDULE = {
+    "track_abandoned_carts": {
+        "task": "cart.tasks.track_abandoned_carts",
+        "schedule": crontab(minute="*"),
+    },
+}
+
+# Cache settings
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",

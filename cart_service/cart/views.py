@@ -2,6 +2,7 @@ from rest_framework import status, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsCustomer
+from .tasks import track_abandoned_carts
 from .serializers import CartItemSerializer
 from .services import CartService
 
@@ -37,10 +38,10 @@ class PersistCartView(views.APIView):
     """Move cart from Redis to PostgreSQL when the user checks out."""
     permission_classes = [IsAuthenticated, IsCustomer]
 
-    def post(self, request):
+    def get(self, request):
         cart = CartService.persist_cart(request.user.id)
         if cart:
-            return Response({"status": 201, "message": "Cart saved successfully", "cart_id": cart.id}, status=status.HTTP_201_CREATED)
+            return Response({"status": 201, "message": "Cart saved successfully", "cart_id": cart}, status=status.HTTP_201_CREATED)
         return Response({"status": 200, "message": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
 
