@@ -15,6 +15,9 @@ celerybeat.pid
 **/logs/** 
 !**/logs
 **/db.sqlite3
+**/node_modules
+**/package-lock.json
+**/build
 .env
 /k8s/secrets/
 **/management/data/**
