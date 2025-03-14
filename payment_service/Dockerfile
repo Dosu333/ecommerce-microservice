@@ -1,4 +1,3 @@
-# Use Node.js Alpine for a lightweight build
 FROM node:18-alpine
 
 # Set the working directory
