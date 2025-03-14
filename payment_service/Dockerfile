@@ -12,9 +12,3 @@ RUN npm install
 
 # Copy the application files
 COPY . .
-
-# Expose the port for the service
-EXPOSE 3000
-
-# Run the service
-CMD ["npm", "run", "start"]
