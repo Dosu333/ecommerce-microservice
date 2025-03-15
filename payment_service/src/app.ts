@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-import { sequelize } from "./config/db";
+import { sequelize } from "./config/database";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandlerMiddleware";
 
