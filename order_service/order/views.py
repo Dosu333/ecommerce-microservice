@@ -2,12 +2,14 @@ from django.db.models import Exists, OuterRef
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from decouple import config
 from core.permissions import IsCustomer, IsVendor
 from core.exceptions import CustomValidationError
 from core.grpc import check_product_availability
 from .models import Order
 from .serializers import OrderSerializer, ListOrderSerializer
 from .tasks import clear_cart
+import redis
 
 
 host = config("REDIS_HOST")
@@ -52,7 +54,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         return context
     
     def perform_create(self, serializer):
-        sorder = erializer.save(user_id=self.request.user.id)
+        order = serializer.save(user_id=self.request.user.id)
         
         # Publish Order Created Event
         redis_client.xadd("order_stream", {"order_id": order.id, "user_id": str(self.request.user.id), "total_price": order.total_price, "email": self.request.user.email})

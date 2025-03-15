@@ -143,7 +143,7 @@ services:
       - "3000:3000"
     volumes:
       - ./payment_service:/app
-    command: npm run start
+    command: /entrypoint.sh
 
   celery_worker_user:
     build: ./user_service

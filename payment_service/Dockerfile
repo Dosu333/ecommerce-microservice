@@ -9,5 +9,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+RUN npm install -g pm2
+
 # Copy the application files
 COPY . .
+
+# Copy entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT [ "/entrypoint.sh" ]

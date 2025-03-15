@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node build/server.js",
-    "build": "tsc"
+    "build": "tsc",
+    "orderListener": "tsc && node build/listeners/orderListener.js"
   },
   "author": "",
   "license": "ISC",
