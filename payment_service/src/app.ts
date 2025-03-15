@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import { sequelize } from "./config/database";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandlerMiddleware";
+import paymentRoutes from "./routes/paymentRoutes"
 
 
 const app: Application = express();
@@ -24,8 +25,8 @@ app.use(cors({
   },
   credentials: true
 }));
-
 app.use(errorHandler);
+
 
 // Database Connection
 (async () => {
@@ -41,6 +42,8 @@ app.use(errorHandler);
   }
 })();
 
+// Routes
+app.use("/payment", paymentRoutes)
 
 // Test connection
 app.get("/", (req, res) => {
