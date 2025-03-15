@@ -2,20 +2,20 @@ import { Sequelize, DataTypes, Model } from "sequelize";
 
 interface PaymentAttributes {
     id?: string;
-    user_id: string;
-    order_id: string;
+    userId: string;
+    orderId: string;
     reference: string;
-    amount: string;
-    status?: string[];
+    amount: number;
+    status?: string;
 }
 
 class Payment extends Model<PaymentAttributes> implements PaymentAttributes {
     public id!: string;
-    public user_id!: string;
-    public order_id!: string;
+    public userId!: string;
+    public orderId!: string;
     public reference!: string;
-    public amount!: string;
-    public status!: string[];
+    public amount!: number;
+    public status!: string;
     
     static initModel(sequelize: Sequelize): void {
         this.init(
@@ -25,11 +25,11 @@ class Payment extends Model<PaymentAttributes> implements PaymentAttributes {
                   primaryKey: true,
                   defaultValue: DataTypes.UUIDV4,
                 },
-                user_id: { 
+                userId: { 
                     type: DataTypes.UUID, 
                     allowNull: false 
                 },
-                order_id: { 
+                orderId: { 
                     type: DataTypes.UUID, 
                     allowNull: false 
                 },

@@ -20,3 +20,4 @@ export const DB_NAME = process.env.POSTGRES_NAME || "ecommercedb";
 export const JWT_SECRET = process.env.JWT_SECRET || "jwt_secret";
 export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "jwt_refresh_secret";
 export const REDIS_HOST = process.env.REDIS_HOST || "localhost";
+export const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET || "paystact_secret"
