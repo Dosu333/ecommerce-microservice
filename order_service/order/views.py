@@ -10,6 +10,10 @@ from .serializers import OrderSerializer, ListOrderSerializer
 from .tasks import clear_cart
 
 
+host = config("REDIS_HOST")
+port = config("REDIS_PORT")
+redis_client = redis.Redis(host=host, port=port, decode_responses=True)
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related("items").all()
     serializer_class = OrderSerializer
@@ -48,7 +52,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         return context
     
     def perform_create(self, serializer):
-        serializer.save(user_id=self.request.user.id)
+        sorder = erializer.save(user_id=self.request.user.id)
+        
+        # Publish Order Created Event
+        redis_client.xadd("order_stream", {"order_id": order.id, "user_id": str(self.request.user.id), "total_price": order.total_price})
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
