@@ -55,7 +55,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         sorder = erializer.save(user_id=self.request.user.id)
         
         # Publish Order Created Event
-        redis_client.xadd("order_stream", {"order_id": order.id, "user_id": str(self.request.user.id), "total_price": order.total_price})
+        redis_client.xadd("order_stream", {"order_id": order.id, "user_id": str(self.request.user.id), "total_price": order.total_price, "email": self.request.user.email})
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
