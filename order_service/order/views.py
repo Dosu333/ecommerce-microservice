@@ -50,14 +50,14 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_context(self):
         """Pass the request user to the serializer to filter order items."""
         context = super().get_serializer_context()
-        context["request_user"] = self.request.user
+        context["request"] = self.request
         return context
     
     def perform_create(self, serializer):
         order = serializer.save(user_id=self.request.user.id)
         
         # Publish Order Created Event
-        redis_client.xadd("order_stream", {"order_id": order.id, "user_id": str(self.request.user.id), "total_price": order.total_price, "email": self.request.user.email})
+        redis_client.xadd("order_stream", {"order_id": str(order.id), "user_id": str(self.request.user.id), "total_price": float(order.total_price), "email": self.request.user.email})
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)

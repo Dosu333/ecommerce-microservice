@@ -1,26 +1,17 @@
-import axios from "axios";
-import Payment from "../models/Payment";
-import { PAYSTACK_SECRET } from "../config/dotenv.config";
+import { initializePayment } from "../config/paystack";
 
 export const initializePaymentService = async (userId: string, orderId: string, email: string, amount: number) => {
   const reference = `pay_${orderId}`
-  const response = await axios.post(
-    "https://api.paystack.co/transaction/initialize",
-    {
-      email,
-      amount: amount * 100,
-      reference: reference,
-    },
-    {
-      headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` },
-    }
-  );
-  await Payment.create({
-    userId,
-    orderId,
-    amount,
-    reference,
-    status: "pending",
-  });
-  return response.data;
+  console.log("logging payment service")
+  console.log(userId, orderId, email, amount, reference)
+  const response = initializePayment(userId, orderId, email, amount)
+  // const payment = await Payment.create({
+  //   userId: userId,
+  //   orderId: orderId,
+  //   amount: amount,
+  //   reference: reference,
+  //   status: "pending",
+  // });
+  return response;
+  // return payment
 };

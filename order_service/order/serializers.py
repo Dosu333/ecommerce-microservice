@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from core.grpc import get_product_detail, check_product_availability
 from core.exceptions import CustomValidationError
+from core.permissions import IsVendor
 from .models import Order, OrderItem
 
 
@@ -51,11 +52,11 @@ class ListOrderSerializer(OrderSerializer):
 
     def get_items(self, obj):
         """Filter order items so vendors only see their items"""
-        request_user = self.context.get("request_user")
+        request = self.context.get("request")
         
-        if request_user and IsVendor().has_permission(request_user, None):
+        if request and IsVendor().has_permission(request, None):
             # Filter order items for vendor
-            order_items = obj.items.filter(vendor_id=request_user.id)
+            order_items = obj.items.filter(vendor_id=request.user.id)
         else:
             # Return all items for customers
             order_items = obj.items.all()
