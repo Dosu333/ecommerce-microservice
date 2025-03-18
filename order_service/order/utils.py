@@ -16,7 +16,12 @@ def initialize_payment(headers, order_id, amount):
 
     if payment_response.status_code == 201:
         payment_data = payment_response.json()
-        payment_link = payment_data.get("paymentUrl").get('data').get('authorization_url')
+        payment_link = payment_data.get("data", {}).get('paymentUrl')
         return {'success': True, 'payment_link': payment_link}
     else:
-        return {'success': False}
+        try:
+            payment_data = payment_response.json()
+            message = payment_data.get("message")
+            return {'success': False, "message": message}
+        except: 
+            return {'success': False, "message": None}

@@ -61,7 +61,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         if payment['success']:
             order.payment_link = payment['payment_link']
         else:
-            print(payment)
+            if payment["message"]:
+                raise CustomInternalServerError(payment['message'])
             raise CustomInternalServerError("Payment intialization failed")
     
     def create(self, request, *args, **kwargs):

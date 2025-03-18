@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, ValidationError } from "../errors/errors";
 import { AuthenticatedRequest } from "../middleware/authenticationMiddleware";
-import { initializePaymentService } from "../services/paymentService";
+import { initializePaymentService, getUserTransactionsService } from "../services/paymentService";
 import { Payment } from "../config/database"
 import redisClient, { connectRedis } from "../config/redis";
 
@@ -41,8 +41,21 @@ export const initializePaymentController = async (req: AuthenticatedRequest, res
         };
         const { orderId, amount } = req.body;
         const paymentUrl =  await initializePaymentService(user.user_id, orderId, user.email, amount)
-        res.status(201).json({status:201, paymentUrl: paymentUrl, message:"Payment successfully initiated"});
+        res.status(201).json({status:201, data: {paymentUrl}, message:"Payment successfully initiated"});
     } catch(error) {
         next(error);
     }
+}
+
+export const getUserTransactionsController = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if(!user) {
+      throw new AuthenticationError("Invalid login. Please login again");
+    }
+    const payments = await getUserTransactionsService(user.user_id)
+    res.status(200).json({status: 200, message: "Transactions retrieved successfully", data: payments})
+  } catch(error) {
+    next(error)
+  }
 }

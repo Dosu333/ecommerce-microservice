@@ -9,7 +9,7 @@ export const initializePayment = async (userId: string, orderId: string, email: 
         amount: amount,
         status: "pending",
       });
-      
+
   const response = await axios.post(
     "https://api.paystack.co/transaction/initialize",
     {
@@ -25,5 +25,5 @@ export const initializePayment = async (userId: string, orderId: string, email: 
       headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` },
     }
   );
-  return response.data;
+  return response.data.data.authorization_url;
 };
