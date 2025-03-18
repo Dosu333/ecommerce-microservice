@@ -26,7 +26,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_classes = [IsAuthenticated] 
         if self.action in ['list', 'retrieve']:
-            permission_classes = [IsAuthenticated, (IsCustomer | IsVendor)]
+            permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsAuthenticated, IsCustomer]
         return [permission() for permission in permission_classes]
@@ -74,3 +74,18 @@ class OrderViewSet(viewsets.ModelViewSet):
             'data': response.data,
         }
         return response
+    
+class RetryPaymentView(APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    def get(self, request, order_id):
+        try:
+            order = Order.objects.get(id=order_id)
+            if order.is_paid:
+                return Response({"status": 400, "error": "Order has been paid for already"}, status=status.HTTP_400_BAD_REQUEST)
+            payment = initialize_payment(request.headers, order_id, float(order.total_price))
+            
+            if payment['success']:
+                return Response({"status": 200, "message": "New payment link generated", "data": {"payment_link": payment['payment_link']}}, status=status.HTTP_200_OK)
+            return Response({"status": 400, "error": "Failed to reinitialize payment"}, status=status.HTTP_400_BAD_REQUEST)
+        except Order.DoesNotExist:
+            return Response({"status": 404, "error": "Invalid order"}, status=status.HTTP_404_NOT_FOUND)
