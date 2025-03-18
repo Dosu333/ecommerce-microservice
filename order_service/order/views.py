@@ -1,5 +1,5 @@
 from django.db.models import Exists, OuterRef
-from rest_framework import viewsets, status
+from rest_framework import views, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from decouple import config
@@ -75,7 +75,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         }
         return response
     
-class RetryPaymentView(APIView):
+class RetryPaymentView(views.APIView):
     permission_classes = [IsAuthenticated, IsCustomer]
     def get(self, request, order_id):
         try:

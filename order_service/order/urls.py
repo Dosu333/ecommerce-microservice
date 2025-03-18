@@ -10,5 +10,5 @@ router.register('orders', OrderViewSet, basename='orderviewsets')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('retry-payment/', RetryPaymentView.as_view()),
+    path('retry-payment/<str:order_id>/', RetryPaymentView.as_view()),
 ]
