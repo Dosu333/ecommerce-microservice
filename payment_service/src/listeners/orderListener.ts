@@ -28,7 +28,7 @@ async function listenForOrders() {
             email,
             amount
           );
-          const transaction = await Payment.create({
+          await Payment.create({
                 userId: user_id,
                 orderId: order_id,
                 amount: amount,
@@ -39,9 +39,8 @@ async function listenForOrders() {
             await redisClient.xAdd("payment_stream", "*", {
               order_id,
               status: "success",
+              payment_url: payment.data.authorization_url
             });
-            console.log("Payment successful")
-            transaction.update({status: "success"})
           }
 
           lastId = id;
