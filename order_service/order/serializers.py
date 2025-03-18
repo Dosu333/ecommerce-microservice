@@ -63,3 +63,8 @@ class ListOrderSerializer(OrderSerializer):
 
         return OrderItemSerializer(order_items, many=True).data
 
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'status']
+

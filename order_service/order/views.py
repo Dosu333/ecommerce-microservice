@@ -7,7 +7,7 @@ from core.permissions import IsCustomer, IsVendor
 from core.exceptions import CustomValidationError, CustomInternalServerError
 from core.grpc import check_product_availability
 from .models import Order
-from .serializers import OrderSerializer, ListOrderSerializer
+from .serializers import OrderSerializer, ListOrderSerializer, UpdateOrderSerializer
 from .utils import initialize_payment
 from .tasks import clear_cart
 import redis
@@ -21,12 +21,14 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related("items").all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsCustomer]
-    http_method_names = ['get', 'post']
+    http_method_names = ['get', 'post', 'put']
     
     def get_permissions(self):
         permission_classes = [IsAuthenticated] 
         if self.action in ['list', 'retrieve']:
             permission_classes = [IsAuthenticated]
+        elif self.action in ['partial_update', 'update']:
+            permission_classes = [IsAuthenticated, (IsCustomer | IsVendor)]
         else:
             permission_classes = [IsAuthenticated, IsCustomer]
         return [permission() for permission in permission_classes]
@@ -34,6 +36,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return ListOrderSerializer
+        elif self.action in ['partial_update', 'update']:
+            return UpdateOrderSerializer
         return super().get_serializer_class()
     
     def get_queryset(self):
@@ -64,6 +68,20 @@ class OrderViewSet(viewsets.ModelViewSet):
             if payment["message"]:
                 raise CustomInternalServerError(payment['message'])
             raise CustomInternalServerError("Payment intialization failed")
+        
+    def perform_update(self, serializer):
+        data = serializer.validated_data
+        is_vendor = IsVendor().has_permission(self.request, self)
+        is_customer = IsVendor().has_permission(self.request, self)
+        if is_vendor and data['status'] != 'cancelled':
+            raise CustomValidationError("You can only cancel an order")
+        elif is_customer and data['status'] != "delivered":
+            raise CustomValidationError("You can only mark your order as delivered")
+        order = serializer.save()
+        if data['status'] == "cancelled":
+             redis_client.xadd("order_stream", {"event": "order_cancelled", "order_id": str(order.id)})
+        elif data["status"] == "delivered":
+            redis_client.xadd("order_stream", {"event": "order_delivered", "order_id": str(order.id)})
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
