@@ -1,5 +1,6 @@
 import express, { Application } from "express";
 import { sequelize } from "./config/database";
+import { connectRedis } from "./config/redis";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandlerMiddleware";
 import paymentRoutes from "./routes/paymentRoutes"
@@ -41,6 +42,9 @@ app.use(errorHandler);
     console.error("Unable to connect to the database:", error);
   }
 })();
+
+// Connect Redis
+connectRedis();
 
 // Routes
 app.use("/payment", paymentRoutes)
