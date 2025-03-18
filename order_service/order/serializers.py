@@ -27,7 +27,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "user_id", "address", "status", "total_price", "payment_link", "items", "created_at"]
+        fields = ["id", "user_id", "address", "status", "total_price", "payment_link", "items", "is_paid", "created_at"]
 
     def create(self, validated_data):
         """Create an order with multiple products"""

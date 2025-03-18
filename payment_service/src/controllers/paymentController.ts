@@ -2,21 +2,22 @@ import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, ValidationError } from "../errors/errors";
 import { AuthenticatedRequest } from "../middleware/authenticationMiddleware";
 import { initializePaymentService } from "../services/paymentService";
-import redisClient from "../config/redis";
+import redisClient, { connectRedis } from "../config/redis";
 
 
 export const handleWebhook = async (req: Request, res: Response) => {
-  const { event, data } = req.body;
+  const event = req.body;
+  const { reference, status, metadata } = event.data;
+  await connectRedis();
 
-  if (event === "charge.success") {
-    const orderId = data.reference.split("_")[1];
+  if (status === "success") {
+      const { order_id } = metadata;
 
-    // Store in Redis Stream for order service to process
-    await redisClient.xAdd(
-      "payment_stream",
-      "*",
-      { order_id: orderId, status: "success" }
-    );
+      // Notify the order service through Redis stream
+      await redisClient.xAdd("payment_stream", "*", {
+          order_id,
+          status: "paid"
+      });
   }
 
   res.sendStatus(200);

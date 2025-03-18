@@ -4,13 +4,17 @@ import { PAYSTACK_SECRET } from "./dotenv.config";
 
 export const initializePayment = async (userId: string, orderId: string, email: string, amount: number) => {
   const reference = `pay_${orderId}`
-  
+
   const response = await axios.post(
     "https://api.paystack.co/transaction/initialize",
     {
       email,
       amount: amount * 100,
       reference: reference,
+      metadata: {
+        user_id: userId,
+        order_id: orderId
+      },
     },
     {
       headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` },

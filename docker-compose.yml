@@ -109,7 +109,9 @@ services:
       - "8003:8003"
     volumes:
       - ./order_service:/app
-    command: python manage.py runserver 0.0.0.0:8003
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8003 &
+             python manage.py payment_listener"
 
   cart-service:
     build: ./cart_service
