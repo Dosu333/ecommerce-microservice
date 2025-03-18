@@ -41,3 +41,11 @@ class CustomValidationError(APIException):
 
     def __init__(self, detail, code=None):
         self.detail = {'message': detail}
+
+class CustomInternalServerError(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = 'An internal server error occured.'
+    default_code = 'error'
+
+    def __init__(self, detail, code=None):
+        self.detail = {'message': detail}

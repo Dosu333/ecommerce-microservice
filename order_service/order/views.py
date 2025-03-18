@@ -4,10 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from decouple import config
 from core.permissions import IsCustomer, IsVendor
-from core.exceptions import CustomValidationError
+from core.exceptions import CustomValidationError, CustomInternalServerError
 from core.grpc import check_product_availability
 from .models import Order
 from .serializers import OrderSerializer, ListOrderSerializer
+from .utils import initialize_payment
 from .tasks import clear_cart
 import redis
 
@@ -55,9 +56,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         order = serializer.save(user_id=self.request.user.id)
+        payment = initialize_payment(self.request.headers, str(order.id), float(order.total_price))
         
-        # Publish Order Created Event
-        redis_client.xadd("order_stream", {"order_id": str(order.id), "user_id": str(self.request.user.id), "total_price": float(order.total_price), "email": self.request.user.email})
+        if payment['success']:
+            order.payment_link = payment['payment_link']
+        else:
+            print(payment)
+            raise CustomInternalServerError("Payment intialization failed")
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
