@@ -3,12 +3,13 @@ import requests
 
 PAYMENT_SERVICE_URL = config('PAYMENT_SERVICE_URL')
 
-def initialize_payment(headers, order_id, amount):
+def initialize_payment(headers, order_id, amount, vendor_id):
     headers = {"Authorization": headers.get("Authorization")}
     payment_response = requests.post(
             f"{PAYMENT_SERVICE_URL}/payment/initialize/",
             json={
                 "orderId": order_id,
+                "vendorId": vendor_id,
                 "amount": amount
             },
             headers=headers
