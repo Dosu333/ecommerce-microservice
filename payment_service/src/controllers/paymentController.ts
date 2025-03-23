@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, ValidationError } from "../errors/errors";
 import { AuthenticatedRequest } from "../middleware/authenticationMiddleware";
 import { initializePaymentService, getUserTransactionsService } from "../services/paymentService";
-import { Payment } from "../config/database"
+import { Payment, Escrow } from "../config/database"
 import redisClient, { connectRedis } from "../config/redis";
 
 
@@ -22,6 +22,13 @@ export const handleWebhook = async (req: Request, res: Response) => {
     });
     if (payment) {
       payment.update({status: "success"})
+      await Escrow.create({
+        orderId: payment.orderId,
+        buyerId: payment.userId,
+        vendorId: payment.vendorId,
+        amount: payment.amount,
+        status: "pending"
+      })
     }
   } else {
     if (payment) {
@@ -39,8 +46,8 @@ export const initializePaymentController = async (req: AuthenticatedRequest, res
         if (!user) {
             throw new AuthenticationError("Invalid login. Please login again");
         };
-        const { orderId, amount } = req.body;
-        const paymentUrl =  await initializePaymentService(user.user_id, orderId, user.email, amount)
+        const { orderId, vendorId, amount } = req.body;
+        const paymentUrl =  await initializePaymentService(user.user_id, vendorId, orderId, user.email, amount)
         res.status(201).json({status:201, data: {paymentUrl}, message:"Payment successfully initiated"});
     } catch(error) {
         next(error);

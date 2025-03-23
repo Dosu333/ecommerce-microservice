@@ -2,9 +2,10 @@ import axios from "axios";
 import Payment from "../models/Payment";
 import { PAYSTACK_SECRET } from "./dotenv.config";
 
-export const initializePayment = async (userId: string, orderId: string, email: string, amount: number) => {
+export const initializePayment = async (userId: string, vendorId: string, orderId: string, email: string, amount: number) => {
     const payment = await Payment.create({
         userId: userId,
+        vendorId: vendorId,
         orderId: orderId,
         amount: amount,
         status: "pending",
@@ -27,3 +28,33 @@ export const initializePayment = async (userId: string, orderId: string, email: 
   );
   return response.data.data.authorization_url;
 };
+
+
+export const refundTransaction = async (reference: string, amount: number | null) => {
+    try {
+        const response = await axios.post(
+            "https://api.paystack.co/refund",
+            {
+                transaction: reference,
+                amount: amount ? amount * 100 : undefined
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        if (response.data.status) {
+            console.log("Refund Successful:", response.data.data);
+            return response.data.data;
+        } else {
+            console.log("Refund Failed:", response.data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error while processing refund:", error);
+        return null;
+    }
+}

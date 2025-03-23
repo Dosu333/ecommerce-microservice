@@ -3,6 +3,7 @@ import { Sequelize, DataTypes, Model } from "sequelize";
 interface PaymentAttributes {
   id?: string;
   userId: string;
+  vendorId: string;
   orderId: string;
   reference?: string;
   amount: number;
@@ -12,6 +13,7 @@ interface PaymentAttributes {
 class Payment extends Model<PaymentAttributes> implements PaymentAttributes {
   public id!: string;
   public userId!: string;
+  public vendorId!: string;
   public orderId!: string;
   public reference?: string;
   public amount!: number;
@@ -29,6 +31,10 @@ class Payment extends Model<PaymentAttributes> implements PaymentAttributes {
           type: DataTypes.UUID,
           allowNull: false,
         },
+        vendorId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+          },
         orderId: {
           type: DataTypes.UUID,
           allowNull: false,
