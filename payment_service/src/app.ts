@@ -4,6 +4,7 @@ import { connectRedis } from "./config/redis";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandlerMiddleware";
 import paymentRoutes from "./routes/paymentRoutes"
+import walletRoutes from "./routes/walletRoutes"
 
 
 const app: Application = express();
@@ -48,6 +49,7 @@ connectRedis();
 
 // Routes
 app.use("/payment", paymentRoutes)
+app.use("/wallet", walletRoutes)
 
 // Test connection
 app.get("/", (req, res) => {
