@@ -11,7 +11,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from email_validator import validate_email, EmailNotValidError
 from .models import Token, User
-from .tasks import send_new_user_email
+from .tasks import send_new_user_email, create_vendor_wallet
 
 
 class ListUserSerializer(serializers.ModelSerializer):
@@ -51,6 +51,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
             defaults={'user': user, 'token_type': 'ACCOUNT_VERIFICATION', 'token': get_random_string(120)})
         user_data = {'id': user.id, 'email': user.email, 'fullname': f"{user.lastname} {user.firstname}",
                      'url': f"{settings.CLIENT_URL}/verify-user/?token={token.token}", 'year': year}
+        if 'VENDOR' in user.roles:
+            create_vendor_wallet.delay(str(user.id))
         send_new_user_email.delay(user_data)
         return user
 
