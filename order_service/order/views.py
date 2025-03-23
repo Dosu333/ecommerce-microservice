@@ -7,7 +7,7 @@ from core.permissions import IsCustomer, IsVendor
 from core.exceptions import CustomValidationError, CustomInternalServerError
 from core.grpc import check_product_availability
 from .models import Order
-from .serializers import OrderSerializer, ListOrderSerializer, UpdateOrderSerializer
+from .serializers import OrderSerializer, CreateOrderSerializer, RetrieveOrderSerializer, UpdateOrderSerializer
 from .utils import initialize_payment
 from .tasks import clear_cart
 import redis
@@ -21,7 +21,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related("items").all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsCustomer]
-    http_method_names = ['get', 'post', 'put']
+    http_method_names = ['get', 'post', 'patch']
     
     def get_permissions(self):
         permission_classes = [IsAuthenticated] 
@@ -34,8 +34,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
     
     def get_serializer_class(self):
-        if self.action == 'list':
-            return ListOrderSerializer
+        if self.action == 'create':
+            return CreateOrderSerializer
+        elif self.action == 'retrieve':
+            return RetrieveOrderSerializer
         elif self.action in ['partial_update', 'update']:
             return UpdateOrderSerializer
         return super().get_serializer_class()
@@ -45,25 +47,16 @@ class OrderViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if is_vendor:
-            # Filter orders where at least one order item belongs to the vendor
-            return self.queryset.filter(
-                Exists(OrderItem.objects.filter(order=OuterRef("id"), vendor_id=user.id))
-            )
-        
+            return self.queryset.filter(vendor_id=user.id)
         return self.queryset.filter(user_id=user.id)
-
-    def get_serializer_context(self):
-        """Pass the request user to the serializer to filter order items."""
-        context = super().get_serializer_context()
-        context["request"] = self.request
-        return context
     
     def perform_create(self, serializer):
         order = serializer.save(user_id=self.request.user.id)
-        payment = initialize_payment(self.request.headers, str(order.id), float(order.total_price))
+        payment = initialize_payment(self.request.headers, str(order.id), float(order.total_price), str(order.vendor_id))
         
         if payment['success']:
             order.payment_link = payment['payment_link']
+            order.save()
         else:
             if payment["message"]:
                 raise CustomInternalServerError(payment['message'])
@@ -80,7 +73,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = serializer.save()
         if data['status'] == "cancelled":
              redis_client.xadd("order_stream", {"event": "order_cancelled", "order_id": str(order.id)})
-        elif data["status"] == "delivered":
+        elif data["status"] == "completed":
             redis_client.xadd("order_stream", {"event": "order_delivered", "order_id": str(order.id)})
     
     def create(self, request, *args, **kwargs):
