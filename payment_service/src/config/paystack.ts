@@ -1,5 +1,6 @@
 import axios from "axios";
 import Payment from "../models/Payment";
+import logger from "./logger";
 import { PAYSTACK_SECRET } from "./dotenv.config";
 
 const paystackUrl = "https://api.paystack.co";
@@ -44,11 +45,11 @@ export const verifyAccountNumber = async (accountNumber: string, bankCode: strin
         if (response.data.status) {
             return response.data.data;
         } else {
-            console.log("Account verification failed:", response.data.message);
+            logger.error("Account verification failed:", response.data.message);
             return null;
         }
     } catch (error) {
-        console.error("Error verifying account:", error);
+        logger.error("Error verifying account:", error);
         return null;
     }
 };
@@ -74,14 +75,14 @@ export const createTransferRecipient = async (accountNumber: string, bankCode: s
         );
 
         if (response.data.status) {
-            console.log("Transfer Recipient Created:", response.data.data);
+            logger.info("Transfer Recipient Created:", response.data.data);
             return response.data.data;
         } else {
-            console.log("Failed to create recipient:", response.data.message);
+            logger.error("Failed to create recipient:", response.data.message);
             return null;
         }
     } catch (error) {
-        console.error("Error creating transfer recipient:", error);
+        logger.error("Error creating transfer recipient:", error);
         return null;
     }
 };
@@ -106,14 +107,14 @@ export const transferToAccount = async (recipientCode: string, amount: number, r
         );
 
         if (response.data.status) {
-            console.log("Transfer Successful:", response.data.data);
+            logger.info("Transfer Successful:", response.data.data);
             return response.data.data;
         } else {
-            console.log("Transfer Failed:", response.data.message);
+            logger.error("Transfer Failed:", response.data.message);
             return null;
         }
     } catch (error) {
-        console.error("Error processing transfer:", error);
+        logger.error("Error processing transfer:", error);
         return null;
     }
 };
@@ -136,14 +137,14 @@ export const refundTransaction = async (reference: string, amount: number | null
         );
 
         if (response.data.status) {
-            console.log("Refund Successful:", response.data.data);
+            logger.info("Refund Successful:", response.data.data);
             return response.data.data;
         } else {
-            console.log("Refund Failed:", response.data.message);
+            logger.error("Refund Failed:", response.data.message);
             return null;
         }
     } catch (error) {
-        console.error("Error while processing refund:", error);
+        logger.error("Error while processing refund:", error);
         return null;
     }
 }

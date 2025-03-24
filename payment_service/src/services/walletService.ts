@@ -5,8 +5,10 @@ import {
   transferToAccount,
 } from "../config/paystack";
 import { sequelize } from "../config/database";
+import logger from "../config/logger";
 import Wallet from "../models/Wallet";
 import Payment from "../models/Payment";
+import { log } from "console";
 
 const createPaymentTransaction = async (userId: string, amount: number) => {
     const payment = await Payment.create({
@@ -17,11 +19,7 @@ const createPaymentTransaction = async (userId: string, amount: number) => {
     return payment;
 }
 
-const updatePaymentStatus = async (reference: string, status: string) => {
-    const payment = await Payment.findOne({ where: { reference } }); 
-    if (!payment) {
-        throw new ValidationError("Payment not found");
-    }
+const updatePaymentStatus = async (payment: Payment, status: string) => {
     payment.status = status;
     await payment.save();
     return payment;
@@ -30,6 +28,7 @@ const updatePaymentStatus = async (reference: string, status: string) => {
 export const getWalletBalanceService = async (userId: string) => {
   const wallet = await Wallet.findOne({ where: { userId } });
   if (!wallet) {
+    logger.error("Wallet not found");
     throw new ValidationError("Wallet not found");
   }
   return wallet.balance ?? 0.0;
@@ -47,11 +46,13 @@ export const updateWalletService = async (
 ) => {
   const wallet = await Wallet.findOne({ where: { userId } });
   if (!wallet) {
+    logger.error("Wallet not found");
     throw new ValidationError("Wallet not found");
   }
 
   const response = await verifyAccountNumber(accountNumber, bankCode);
   if (!response) {
+    logger.error("Account verification failed");
     throw new ValidationError("Account verification failed");
   }
 
@@ -61,6 +62,7 @@ export const updateWalletService = async (
     response.account_name
   );
   if (!recipientResponse) {
+    logger.error("Recipient creation failed");
     throw new ValidationError("Recipient creation failed");
   }
 
@@ -75,6 +77,7 @@ export const updateWalletService = async (
 
 export const debitWalletService = async (userId: string, amount: number) => {
   if (amount <= 0) {
+    logger.error("Invalid amount");
     throw new ValidationError("Invalid amount");
   }
   const transaction = await sequelize.transaction();
@@ -85,21 +88,32 @@ export const debitWalletService = async (userId: string, amount: number) => {
       transaction,
     });
 
-    if (!wallet) throw new ValidationError("Wallet not found");
+    if (!wallet) {
+        logger.error("Wallet not found");
+        throw new ValidationError("Wallet not found");
+    };
+
+    if (!wallet.recipientCode)
+        throw new ValidationError("Please update your wallet details");
 
     const payment = await createPaymentTransaction(userId, amount);
     const balance = wallet.balance ?? 0;
-    if (balance < amount) throw new ValidationError("Insufficient funds");
-    if (!wallet.recipientCode)
-      throw new ValidationError("Please update your wallet details");
+    if (balance < amount) {
+        await updatePaymentStatus(payment, "failed");
+        logger.error(`Insufficient funds in wallet. Balance: ${balance}, Amount: ${amount}, User: ${userId}`);
+        throw new ValidationError("Insufficient funds");
+    };
     if (!payment.reference) throw new ValidationError("Payment reference not found");
 
     const response = await transferToAccount(wallet.recipientCode, amount, payment.reference);
-    if (!response) throw new ValidationError("Transfer failed");
+    if (!response) {
+        logger.error(`Transfer failed for user: ${userId}, reference: ${payment.reference}`);
+        throw new ValidationError("Transfer failed");
+    }
     wallet.balance = balance - amount;
     await wallet.save({ transaction });
     await transaction.commit();
-    await updatePaymentStatus(payment.reference, "success");
+    await updatePaymentStatus(payment, "success");
     return wallet.balance;
   } catch (error) {
     await transaction.rollback();
