@@ -3,8 +3,8 @@ import { Sequelize, DataTypes, Model } from "sequelize";
 interface PaymentAttributes {
   id?: string;
   userId: string;
-  vendorId: string;
-  orderId: string;
+  vendorId?: string;
+  orderId?: string;
   reference?: string;
   amount: number;
   status?: string;

@@ -55,3 +55,17 @@ export const updateWalletController = async (req: AuthenticatedRequest, res: Res
     next(error);
   }
 };
+
+export const debitWalletController = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AuthenticationError("Invalid login. Please login again");
+    }
+    const { amount } = req.body;
+    await debitWalletService(user.user_id, amount);
+    res.status(200).json({ status: 200, message: "Wallet debited successfully" });
+  } catch (error) {
+    next(error);
+  }
+};

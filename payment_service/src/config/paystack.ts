@@ -87,6 +87,38 @@ export const createTransferRecipient = async (accountNumber: string, bankCode: s
 };
 
 
+export const transferToAccount = async (recipientCode: string, amount: number, reference: string) => {
+    try {
+        const response = await axios.post(
+            "https://api.paystack.co/transfer",
+            {
+                source: "balance",
+                amount: amount * 100, // Convert to kobo
+                recipient: recipientCode,
+                reference: reference,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        if (response.data.status) {
+            console.log("Transfer Successful:", response.data.data);
+            return response.data.data;
+        } else {
+            console.log("Transfer Failed:", response.data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error processing transfer:", error);
+        return null;
+    }
+};
+
+
 export const refundTransaction = async (reference: string, amount: number | null) => {
     try {
         const response = await axios.post(
