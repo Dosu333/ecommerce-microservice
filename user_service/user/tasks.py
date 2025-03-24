@@ -29,8 +29,7 @@ def send_password_reset_email(email_data):
 @APP.task()
 def create_vendor_wallet(vendor_id):
     response = requests.post(
-        f"{settings.WALLET_SERVICE_URL}/wallet/create/",
-        headers=headers,
+        f"{settings.PAYMENT_SERVICE_URL}/wallet/create/",
         json={"vendorId": vendor_id}
     )
     if response.status_code == 201:
