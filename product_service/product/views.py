@@ -36,8 +36,10 @@ class CategoryAPIView(views.APIView):
             return Response({'status': 200, 'data': serializer.data}, status=status.HTTP_200_OK)
         paginator = CustomPagination()
         search_query = request.query_params.get('q', None)
-        query_filter = {"is_active": True}
+        query_filter = {}
         query_filter["vendor_id"] = request.user.id if IsVendor().has_permission(request, self) else ""
+        if IsCustomer().has_permission(request, self):
+            query_filter["is_active"] = True
         if search_query:
             query_filter["name"] = {"$regex": search_query, "$options": "i"}
         categories_cursor = categories_collection.find(query_filter, {"_id": 0})
@@ -63,7 +65,7 @@ class CategoryAPIView(views.APIView):
         
         return Response({'status': 400, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-    def put(self, request, category_id):
+    def patch(self, request, category_id):
         category = categories_collection.find_one({"id": category_id, "vendor_id": request.user.id})
         if not category:
             return Response({'status': 404, 'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -115,7 +117,10 @@ class ProductAPIView(views.APIView):
         vendor_id = request.query_params.get('vendor', None)
 
         # Define the query
-        query = {"is_active": True}
+        query = {}
+        
+        if IsCustomer().has_permission(request, self):
+            query_filter["is_active"] = True
 
         # Search by name and description
         if search_query:

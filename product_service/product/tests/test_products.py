@@ -25,7 +25,7 @@ def generate_token():
         "email": "johndoe@gmail.com",
         "firstname": "John",
         "lastname": "Doe",
-        "company": "John Doe Inc",
+        "business_name": "John Doe Inc",
         "phone": "1234567890",
         "roles": ["VENDOR", "CUSTOMER"],
         "exp": datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour

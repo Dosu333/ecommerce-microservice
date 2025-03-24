@@ -24,6 +24,7 @@ class Wallet extends Model<WalletAttributes> implements WalletAttributes {
         userId: {
           type: DataTypes.UUID,
           allowNull: false,
+          unique: true,
         },
         balance: {
           type: DataTypes.DECIMAL,

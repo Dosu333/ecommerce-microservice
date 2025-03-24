@@ -15,7 +15,7 @@ class UserSerializer(serializers.Serializer):
 
 
 class VendorSerializer(UserSerializer):
-    company = serializers.CharField(required=False)
+    business_name = serializers.CharField(required=False)
     
     
 class ReviewSerializer(serializers.Serializer):
@@ -44,7 +44,7 @@ class ReviewSerializer(serializers.Serializer):
 
 class CategorySerializer(serializers.Serializer):
     id = serializers.CharField(max_length=255, read_only=True)
-    vendor_id = serializers.CharField(max_length=255)
+    vendor_id = serializers.CharField(max_length=255, required=False)
     name = serializers.CharField(max_length=255)
     slug = serializers.SlugField(read_only=True)
     description = serializers.CharField(required=False)
