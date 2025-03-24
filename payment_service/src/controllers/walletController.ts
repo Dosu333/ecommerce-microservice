@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, ValidationError } from "../errors/errors";
 import { AuthenticatedRequest } from "../middleware/authenticationMiddleware";
-import { getWalletBalanceService, createWalletService, debitWalletService } from "../services/walletService";
+import { getWalletBalanceService, createWalletService, debitWalletService, updateWalletService } from "../services/walletService";
 import { getEscrowBalanceService } from "../services/escrowService";
 
 export const getWalletBalanceController = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -37,6 +37,20 @@ export const createWalletController = async (req: Request, res: Response, next: 
     const { vendorId } = req.body;
     const wallet = await createWalletService(vendorId);
     res.status(201).json({ status: 201, message: "Wallet created successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateWalletController = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AuthenticationError("Invalid login. Please login again");
+    }
+    const { accountNumber, bankCode } = req.body;
+    const wallet = await updateWalletService(user.user_id, accountNumber, bankCode);
+    res.status(200).json({ status: 200, message: "Wallet updated successfully" });
   } catch (error) {
     next(error);
   }
