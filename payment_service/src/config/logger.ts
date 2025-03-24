@@ -14,7 +14,7 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console({
-      format: combine(colorize(), logFormat), // Colored logs in console
+      format: combine(colorize(), logFormat),
     }),
     new transports.File({ filename: "logs/error.log", level: "error" }), 
   ],
