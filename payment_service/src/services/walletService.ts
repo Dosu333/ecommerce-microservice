@@ -7,7 +7,7 @@ export const getWalletBalanceService = async (userId: string) => {
   if (!wallet) {
     throw new ValidationError("Wallet not found");
   }
-  return wallet.balance;
+  return wallet.balance ?? 0.00;
 };
 
 export const createWalletService = async (userId: string) => {
