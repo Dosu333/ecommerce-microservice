@@ -17,6 +17,33 @@ class ProductService(product_pb2_grpc.ProductServiceServicer):
         if product:
             return product_pb2.ProductDetailResponse(id=product['id'], name=product['name'], slug=product['slug'], price=product['price'])
         return product_pb2.ProductDetailResponseResponse(id="", slug="", name="", price=0.0)
+    
+    def ReduceStock(self, request, context):
+        messages = []
+        success = True
+
+        for item in request.items:
+            product = products_collection.find_one({"id": item.id})
+
+            if not product:
+                messages.append(f"Product {item.id} not found")
+                success = False
+                continue
+
+            if product["stock"] < item.quantity:
+                messages.append(f"Not enough stock for product {item.id}")
+                success = False
+                continue
+
+            # Reduce stock
+            products_collection.update_one(
+                {"id": item.id},
+                {"$inc": {"stock": -item.quantity}}
+            )
+
+            messages.append(f"Stock reduced for product {item.id}")
+
+        return product_pb2.ReduceStockResponse(success=success, messages=messages)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

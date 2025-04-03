@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from decouple import config
+from core.grpc import reduce_product_stock
 from order.models import Order
 import redis
 import time
@@ -28,11 +29,18 @@ class Command(BaseCommand):
                         self.stdout.write(f"Received payment update for order: {order_id}, status: {status}")
 
                         if status == "paid":
-                            updated_count = Order.objects.filter(id=order_id).update(is_paid=True)
-                            if updated_count > 0:
-                                self.stdout.write(f"Order {order_id} marked as paid.")
+                            order = Order.objects.filter(id=order_id)
+                            if not order.first().is_paid:  
+                                updated_count = order.update(is_paid=True)
+                                if updated_count > 0:
+                                    order_instance = order.first()
+                                    order_items = order_instance.items.all()
+                                    reduce_product_stock(order_items)
+                                    self.stdout.write(f"Order {order_id} marked as paid.")
+                                else:
+                                    self.stdout.write(f"No matching order found for ID: {order_id}")
                             else:
-                                self.stdout.write(f"No matching order found for ID: {order_id}")
+                                self.stdout.write(f"Order for ID: {order_id} is already paid for")
 
                         last_id = message_id
 

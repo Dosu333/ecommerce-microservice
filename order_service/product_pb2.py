@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rproduct.proto\x12\x07product\".\n\x0eProductRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"\x1e\n\x10ProductIdRequest\x12\n\n\x02id\x18\x01 \x01(\t\"_\n\x0fProductResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\r\n\x05price\x18\x02 \x01(\x01\x12\x0e\n\x06vendor\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0c\n\x04slug\x18\x05 \x01(\t\"N\n\x15ProductDetailResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04slug\x18\x03 \x01(\t\x12\r\n\x05price\x18\x04 \x01(\x01\x32\x9a\x01\n\x0eProductService\x12?\n\nCheckStock\x12\x17.product.ProductRequest\x1a\x18.product.ProductResponse\x12G\n\nGetProduct\x12\x19.product.ProductIdRequest\x1a\x1e.product.ProductDetailResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rproduct.proto\x12\x07product\".\n\x0eProductRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"\x1e\n\x10ProductIdRequest\x12\n\n\x02id\x18\x01 \x01(\t\"_\n\x0fProductResponse\x12\x11\n\tavailable\x18\x01 \x01(\x08\x12\r\n\x05price\x18\x02 \x01(\x01\x12\x0e\n\x06vendor\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0c\n\x04slug\x18\x05 \x01(\t\"N\n\x15ProductDetailResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04slug\x18\x03 \x01(\t\x12\r\n\x05price\x18\x04 \x01(\x01\"/\n\x0fReduceStockItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"=\n\x12ReduceStockRequest\x12\'\n\x05items\x18\x01 \x03(\x0b\x32\x18.product.ReduceStockItem\"8\n\x13ReduceStockResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08messages\x18\x02 \x03(\t2\xe4\x01\n\x0eProductService\x12?\n\nCheckStock\x12\x17.product.ProductRequest\x1a\x18.product.ProductResponse\x12G\n\nGetProduct\x12\x19.product.ProductIdRequest\x1a\x1e.product.ProductDetailResponse\x12H\n\x0bReduceStock\x12\x1b.product.ReduceStockRequest\x1a\x1c.product.ReduceStockResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PRODUCTRESPONSE']._serialized_end=201
   _globals['_PRODUCTDETAILRESPONSE']._serialized_start=203
   _globals['_PRODUCTDETAILRESPONSE']._serialized_end=281
-  _globals['_PRODUCTSERVICE']._serialized_start=284
-  _globals['_PRODUCTSERVICE']._serialized_end=438
+  _globals['_REDUCESTOCKITEM']._serialized_start=283
+  _globals['_REDUCESTOCKITEM']._serialized_end=330
+  _globals['_REDUCESTOCKREQUEST']._serialized_start=332
+  _globals['_REDUCESTOCKREQUEST']._serialized_end=393
+  _globals['_REDUCESTOCKRESPONSE']._serialized_start=395
+  _globals['_REDUCESTOCKRESPONSE']._serialized_end=451
+  _globals['_PRODUCTSERVICE']._serialized_start=454
+  _globals['_PRODUCTSERVICE']._serialized_end=682
 # @@protoc_insertion_point(module_scope)

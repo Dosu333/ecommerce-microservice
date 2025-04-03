@@ -44,19 +44,44 @@ class ProductServiceStub(object):
                 request_serializer=product__pb2.ProductIdRequest.SerializeToString,
                 response_deserializer=product__pb2.ProductDetailResponse.FromString,
                 _registered_method=True)
+        self.ReduceStock = channel.unary_unary(
+                '/product.ProductService/ReduceStock',
+                request_serializer=product__pb2.ReduceStockRequest.SerializeToString,
+                response_deserializer=product__pb2.ReduceStockResponse.FromString,
+                _registered_method=True)
 
 
 class ProductServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def CheckStock(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        Checks the availability of stock for a given product.
+        Accepts a ProductRequest containing product details and returns a ProductResponse
+        indicating the stock status.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetProduct(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """
+        Retrieves detailed information about a specific product.
+        Accepts a ProductIdRequest containing the product ID and returns a ProductDetailResponse
+        with comprehensive product details.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReduceStock(self, request, context):
+        """
+        Reduces the stock quantity for a list of products.
+
+        This RPC method accepts a `ReduceStockRequest` containing a list of product IDs 
+        and their respective quantities to reduce. It returns a `ReduceStockResponse` 
+        indicating whether the operation was successful or not.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -73,6 +98,11 @@ def add_ProductServiceServicer_to_server(servicer, server):
                     servicer.GetProduct,
                     request_deserializer=product__pb2.ProductIdRequest.FromString,
                     response_serializer=product__pb2.ProductDetailResponse.SerializeToString,
+            ),
+            'ReduceStock': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReduceStock,
+                    request_deserializer=product__pb2.ReduceStockRequest.FromString,
+                    response_serializer=product__pb2.ReduceStockResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -129,6 +159,33 @@ class ProductService(object):
             '/product.ProductService/GetProduct',
             product__pb2.ProductIdRequest.SerializeToString,
             product__pb2.ProductDetailResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReduceStock(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/product.ProductService/ReduceStock',
+            product__pb2.ReduceStockRequest.SerializeToString,
+            product__pb2.ReduceStockResponse.FromString,
             options,
             channel_credentials,
             insecure,
