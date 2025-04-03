@@ -101,6 +101,7 @@ services:
     depends_on:
       - order_postgres
       - redis
+      - product-service
     env_file:
       - ./order_service/.env
     networks:
