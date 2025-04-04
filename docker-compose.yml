@@ -70,7 +70,7 @@ services:
       - user_postgres
       - redis
     env_file:
-      - ./.env
+      - ./user_service/.env
     networks:
       - ecommerce-network
     ports:
@@ -84,7 +84,7 @@ services:
     container_name: product-service
     restart: always
     env_file:
-      - ./.env
+      - ./product_service/.env
     networks:
       - ecommerce-network
     ports:
