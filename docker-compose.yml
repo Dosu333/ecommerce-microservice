@@ -92,6 +92,7 @@ services:
       - "50051:50051"
     volumes:
       - ./product_service/app:/app
+      - ./grpc_protos:/app/grpc_protos
     command: python manage.py runserver 0.0.0.0:8002
 
   order-service:
@@ -110,6 +111,7 @@ services:
       - "8003:8003"
     volumes:
       - ./order_service/app:/app
+      - ./grpc_protos:/app/grpc_protos
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8003 &
              python manage.py payment_listener"
