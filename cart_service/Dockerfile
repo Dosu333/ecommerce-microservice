@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install dependencies
-COPY requirements.txt requirements.txt
+COPY ./app/requirements.txt requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
@@ -17,7 +17,7 @@ RUN apt-get update \
     && pip install Pillow
 
 # Copy project
-COPY . .
+COPY ./app /app
 
 # Copy entrypoint.sh
 COPY ./entrypoint.sh /entrypoint.sh
