@@ -4,7 +4,7 @@ services:
     container_name: user_db
     restart: always
     env_file:
-      - ./.env
+      - ./user_service/.env
     networks:
       - ecommerce-network
     ports:
@@ -158,11 +158,11 @@ services:
       - redis
       - user-service
     env_file:
-      - ./.env
+      - ./user_service/.env
     networks:
       - ecommerce-network
     volumes:
-      - ./user_service:/app
+      - ./user_service/app:/app
     command: celery -A core worker --loglevel=info --queues=user_queue --logfile=logs/celery.log
 
   celery_worker_product:
@@ -173,11 +173,11 @@ services:
       - redis
       - product-service
     env_file:
-      - ./.env
+      - ./product_service/.env
     networks:
       - ecommerce-network
     volumes:
-      - ./product_service:/app
+      - ./product_service/app:/app
     command: celery -A core worker --loglevel=info --queues=product_queue --logfile=logs/celery.log
 
   celery_worker_order:
@@ -188,11 +188,11 @@ services:
       - redis
       - order-service
     env_file:
-      - ./.env
+      - ./order_service/.env
     networks:
       - ecommerce-network
     volumes:
-      - ./order_service:/app
+      - ./order_service/app:/app
     command: celery -A core worker --loglevel=info --queues=order_queue --logfile=logs/celery.log
 
   celery_worker_cart:
@@ -207,7 +207,7 @@ services:
     networks:
       - ecommerce-network
     volumes:
-      - ./cart_service:/app
+      - ./cart_service/app:/app
     command: celery -A core worker --loglevel=info --queues=cart_queue --logfile=logs/celery.log
 
   celery_beat_user:
@@ -218,11 +218,11 @@ services:
       - redis
       - celery_worker_user
     env_file:
-      - ./.env
+      - ./user_service/.env
     networks:
       - ecommerce-network
     volumes:
-      - ./user_service:/app
+      - ./user_service/app:/app
     command: celery -A core beat --loglevel=info
 
   celery_beat_cart:
@@ -237,7 +237,7 @@ services:
     networks:
       - ecommerce-network
     volumes:
-      - ./cart_service:/app
+      - ./cart_service/app:/app
     command: celery -A core beat --loglevel=info
 
   flower:
