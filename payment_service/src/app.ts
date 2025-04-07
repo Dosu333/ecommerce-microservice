@@ -1,5 +1,7 @@
 import express, { Application } from "express";
 import { sequelize } from "./config/database";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from "./config/swagger";
 import { connectRedis } from "./config/redis";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandlerMiddleware";
@@ -48,6 +50,7 @@ app.use(errorHandler);
 connectRedis();
 
 // Routes
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/payment", paymentRoutes)
 app.use("/wallet", walletRoutes)
 
