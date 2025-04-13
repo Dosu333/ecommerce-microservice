@@ -11,6 +11,8 @@ RUN npm install
 
 RUN npm install -g typescript
 
+RUN npm i --save-dev @types/node
+
 RUN npm install -g pm2
 
 # Copy the application files
