@@ -146,8 +146,6 @@ services:
       - ecommerce-network
     ports:
       - "3000:3000"
-    volumes:
-      - ./payment_service:/app
     command: /entrypoint.sh
 
   celery_worker_user:
