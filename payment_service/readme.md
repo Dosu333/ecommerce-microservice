@@ -14,10 +14,6 @@ The **Payment Service** is a crucial component of our eCommerce platform. It man
 - [🔌 Endpoints](#endpoints)
 - [🛡️ Authentication](#authentication)
 - [🚀 Deployment](#deployment)
-- [🧪 Testing](#testing)
-- [⚠️ Error Handling](#error-handling)
-- [📈 Logging & Monitoring](#logging--monitoring)
-- [📜 License](#license)
 
 ---
 
