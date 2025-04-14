@@ -35,20 +35,13 @@ Make sure you have the following tools installed:
 
 ## Installation 🚧
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-org/payment-service.git
-cd payment-service
-```
-
-### 2. Install dependencies
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Set up environment variables 🌍
+### 2. Set up environment variables 🌍
 
 Copy the `.env.example` to `.env` and fill out your configuration details like Paystack API key and database credentials.
 
@@ -61,7 +54,6 @@ Here’s what you’ll need to set in your `.env`:
 - `PAYSTACK_SECRET_KEY` – Paystack API secret key 🔑
 - `DATABASE_URL` – PostgreSQL connection string 🛢️
 - `JWT_SECRET` – Secret key for JWT token signing 🛡️
-- `AWS_ACCESS_KEY_ID` – AWS access key for deployments 🏗️
 
 ---
 
