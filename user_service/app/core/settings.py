@@ -27,7 +27,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', 'user-service']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', 'user-service', 'ecommerceuserservice.oladosularinde.com']
 INTERNAL_IPS = ["127.0.0.1"]
 if DEBUG:
     import os  # only if you haven't already imported this
