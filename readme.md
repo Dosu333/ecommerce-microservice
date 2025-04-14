@@ -13,8 +13,6 @@ Welcome to the **eCommerce Platform** repository! This project consists of a set
 - [🔒 Authentication & Authorization](#authentication--authorization)
 - [📦 Installation & Setup](#installation--setup)
 - [🚀 Deployment](#deployment)
-- [🧪 Testing](#testing)
-- [📜 License](#license)
 
 ---
 
