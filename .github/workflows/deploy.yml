@@ -1,0 +1,122 @@
+name: Ecommerce Microservice CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      user-service: ${{ steps.filter.outputs.user-service }}
+      product-service: ${{ steps.filter.outputs.product-service }}
+      cart-service: ${{ steps.filter.outputs.cart-service }}
+      order-service: ${{ steps.filter.outputs.order-service }}
+      payment-service: ${{ steps.filter.outputs.payment-service }}
+      shared: ${{ steps.filter.outputs.shared }}
+      
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          user-service:
+            - 'user_service/**'
+          product-service:
+            - 'product_service/**'
+          cart-service:
+            - 'cart_service/**'
+          order-service:
+            - 'order_service/**'
+          payment-service:
+            - 'payment_service/**'
+          shared:
+            - 'docker-compose.yml'
+            - '.github/workflows/**'
+
+  # Individual deploy jobs for each service
+  deploy-user-service:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.user-service == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy user-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build user-service -d
+
+  deploy-product-service:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.product-service == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy product-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build product-service -d
+
+  deploy-cart-service:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.cart-service == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy cart-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build cart-service -d
+
+  deploy-order-service:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.order-service == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy order-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build order-service -d
+
+  deploy-payment-service:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.payment-service == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy payment-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build payment-service -d
+
+  # Deploy shared services (e.g., databases, redis)
+  deploy-shared:
+    needs: detect-changes
+    if: ${{ github.ref == 'refs/heads/main' && (needs.detect-changes.outputs.shared == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy shared services
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: cd ${{ secrets.PROJECT_PATH }} && git pull && docker compose up --build -d
