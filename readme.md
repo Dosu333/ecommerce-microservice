@@ -25,19 +25,24 @@ Each service focuses on a specific domain, and the platform as a whole enables s
 ### Key Services 🛠️
 
 1. **User Service** 👤  
-   Manages user registration, authentication, profiles, and account details. It’s responsible for issuing **JWT tokens** used across other services for authentication.
+    Manages user registration, authentication, profiles, and account details. It’s responsible for issuing **JWT tokens** used across other services for authentication.  
+    [Live Docs](https://ecommerceuserservice.oladosularinde.com/api/doc)
 
 2. **Product Service** 📦  
-   Handles everything related to products, including adding new products, updating inventory, managing categories, and exposing product listings through a public API.
+    Handles everything related to products, including adding new products, updating inventory, managing categories, and exposing product listings through a public API.  
+    [Live Docs](https://productservice.oladosularinde.com/api/doc)
 
 3. **Cart Service** 🛒  
-   Manages the user's cart. It allows users to add, remove, and modify products in their cart, maintaining a temporary session until checkout.
+    Manages the user's cart. It allows users to add, remove, and modify products in their cart, maintaining a temporary session until checkout.  
+    [Live Docs](https://cartservice.oladosularinde.com/api/doc)
 
 4. **Order Service** 📦  
-   Processes user orders, maintains order history, and handles statuses (pending, shipped, delivered). It interacts with the **Payment Service** to finalize the transaction.
+    Processes user orders, maintains order history, and handles statuses (pending, shipped, delivered). It interacts with the **Payment Service** to finalize the transaction.  
+    [Live Docs](https://orderservice.oladosularinde.com/api/doc)
 
 5. **Payment Service** 💳  
-   Handles the processing of payments, integrates with external payment gateway (**Paystack**), and manages wallet operations (e.g., debiting accounts, wallet balance queries).
+    Handles the processing of payments, integrates with external payment gateway (**Paystack**), and manages wallet operations (e.g., debiting accounts, wallet balance queries).  
+    [Live Docs](https://paymentservice.oladosularinde.com/docs)
 
 ---
 
