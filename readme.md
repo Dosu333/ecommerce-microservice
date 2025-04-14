@@ -86,7 +86,7 @@ To get started with the platform locally, follow the steps below:
 
 ```bash
 git clone https://github.com/Dosu333/ecommerce-microservice.git
-cd ecommerce-platform
+cd ecommerce-microservice
 ```
 
 ### 2. Set up Docker Compose
